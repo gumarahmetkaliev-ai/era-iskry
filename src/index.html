@@ -1566,6 +1566,17 @@ function drawRocket(g,x,y,sc,stage,fire){g.save();g.translate(Math.round(x),Math
 const XPANEL_war2=function(){$('panel').innerHTML=`<button class="close" data-a="close">✕</button><h2>⚔ Штурм крепости: 4 на 4</h2><div class="big">Рен и 3 защитника против Яра, Гранта, Тени и Тимофея.<br>✔ Победа — крепость ваша.<br>✖ Поражение — <b class="no">теряешь ВСЕ ресурсы</b> (в сумке и на складе).</div><p class="muted">Ходи как обычно, E / «Действие» — удар по ближайшему врагу. У каждого своя полоска жизни. Щиты уменьшают урон по твоему отряду, дым замедляет врагов.</p><button data-a="war">⚔ В бой!</button>`};
 XPANEL.war=()=>XPANEL_war2();
 
+
+/* ---- массовый крафт ---- */
+function craftMax(r){const c=sc(rc(r)),ks=Object.keys(c);if(!ks.length)return 100;let m=1e9;for(const k of ks)m=Math.min(m,Math.floor(have(k)/c[k]));return Math.max(0,m)}
+function craftN(r,n){const c=sc(rc(r));n=Math.min(n,craftMax(r));if(n<=0)return 0;for(const k in c){let need=c[k]*n;const a=Math.min(need,S.inv[k]||0);S.inv[k]=(S.inv[k]||0)-a;need-=a;if(need)S.storage[k]=(S.storage[k]||0)-need}
+ give(r.id,n);if(r.id==='ingot')S.stats.ingot+=n;return n}
+const _decoPanel=decoPanel;decoPanel=function(){_decoPanel();if(panelOpen!=='craft')return;$('panel').querySelectorAll('button[data-a=craft]').forEach(b=>{const i=+b.dataset.i,r=RECIPES[i];if(r.once)return;const nd=r.need&&!r.need(),mx=nd?0:craftMax(r);
+  const w=document.createElement('div');w.style.cssText='display:flex;flex-wrap:wrap;gap:4px;width:150px;justify-content:flex-end';b.parentElement.insertBefore(w,b);w.appendChild(b);
+  for(const n of[10,100]){const x=document.createElement('button');x.dataset.a='craftn';x.dataset.i=i;x.dataset.n=n;x.textContent='×'+n;x.disabled=mx<n;x.style.padding='5px 7px';w.appendChild(x)}
+  const x=document.createElement('button');x.dataset.a='craftn';x.dataset.i=i;x.dataset.n='max';x.textContent='Макс ('+mx+')';x.disabled=mx<1;x.style.padding='5px 7px';w.appendChild(x)})};
+$('panel').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled||b.dataset.a!=='craftn')return;const r=RECIPES[+b.dataset.i],n=b.dataset.n==='max'?craftMax(r):+b.dataset.n,got=craftN(r,n);
+ if(got){toast(`Создано: ${ITEMS[r.id]} ×${got}`);showSci(FORM[r.id]);sfx('craft');P.cheer=1;checkQuests();save();renderPanel()}});
 const sv=loadSave();if(sv)$('bCont').style.display='';
 $('bCont').onclick=()=>start(loadSave()||sv,false);
 function showTitle(reset){started=false;F=null;cut=null;document.body.className='';closePanel();$('title').style.display='flex';$('bNew').style.display=reset?'none':'';$('bCont').style.display='none';$('diffBox').style.display=reset?'flex':'none'}
