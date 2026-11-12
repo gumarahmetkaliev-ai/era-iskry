@@ -64,7 +64,7 @@ body.sea #mini{display:block}
 #sci small{display:block;color:#6fe0b0;font-size:11px;letter-spacing:2px}#sci b{font-size:18px;color:#fff}#sci span{display:block;font-size:12px;color:#cfe;margin-top:2px}
 .fx{color:#6fe0b0;font-size:12px}
 #mini{top:auto;bottom:134px;right:8px;width:150px;height:96px;cursor:pointer;image-rendering:pixelated}
-body.fight #mini,body.cut #mini,body.fight #run,body.cut #run,body.fight #qban,body.cut #qban,body.fight #sci{display:none!important}
+body.cut #sci,body.cut #achT,body.fight #mini,body.cut #mini,body.fight #run,body.cut #run,body.fight #qban,body.cut #qban,body.fight #sci{display:none!important}
 #run{position:fixed;right:110px;bottom:40px;width:56px;height:56px;border-radius:50%;font-size:22px;padding:0;background:#2c3a55cc}
 #run.on,#top button.on{background:#3f8f55}
 #wm{display:block;width:100%;background:#16324a;border-radius:6px;margin:6px 0}
@@ -97,7 +97,7 @@ body.fight #mini,body.cut #mini,body.fight #run,body.cut #run,body.fight #qban,b
 <div id="fight"><div class="fl"><button data-f="l">◀</button><button data-f="r">▶</button></div><div class="fl"><button data-f="b">БЛОК<br>L</button><button data-f="p">УДАР<br>J</button><button data-f="k">НОГА<br>K</button><button data-f="u">УКЛОН<br>U</button></div></div>
 <div id="title">
 <h1>ЭРА ИСКРЫ</h1>
-<p><b>Глава 1. Пробуждение · Глава 2. Море · Глава 3. Тень за морем</b></p>
+<p><b>Глава 1. Пробуждение · Глава 2. Море · Глава 3. Тень за морем · Глава 4. Луна</b></p>
 <p>Вспышка обратила людей в камень на три тысячи лет. Ты — Рен, юный учёный, и ты проснулся первым. Верни людям огонь, металл и науку.</p>
 <p>Движение: WASD / стрелки / джойстик. Действие: E / пробел / кнопка.<br>I — инвентарь, C — крафт, B — стройка, Q — задания.<br>M — карта мира, P — пауза и меню, Shift — бег.</p>
 <button id="bCont" style="display:none">Продолжить</button>
@@ -293,7 +293,7 @@ function makeNewland(){const m=mk('newland',92,28,G),r=rng(77),w=m.w,h=m.h,s=(x,
  for(let x=12;x<32;x+=2)m.o[py(x)*w+x]={t:'prints',walk:1};
  for(let x=36;x<46;x+=3)m.o[py(x)*w+x]={t:'prints',walk:1};
  if(S&&S.flags&&S.flags.balloon)O(24,10,'balloon');else if(S&&S.balJob)O(24,10,'bsite');
- m.foes=FOES.map((f,i)=>Object.assign({},f,{pal:PAL[f.id],x:f.route[0][0]*T+8,y:f.route[0][1]*T+12,ri:f.route.length>1?1:0,dir:1,moving:false,seed:i+2,path:[]}));
+ m.foes=FOES.map((f,i)=>Object.assign({},f,{pal:PAL[f.id],x:f.route[0][0]*T+8,y:f.route[0][1]*T+12,ri:f.route.length>1?1:0,dir:1,moving:false,seed:i+2,path:[]}));if(S&&S.flags&&S.flags.warWon){m.foes=[];m.o[13*w+66]=null;m.o[14*w+66]=null}
  return m}
 
 function makeLab(){const m=mk('lab',18,12,WD),w=m.w,s=(x,y,v)=>m.g[y*w+x]=v,O=(x,y,t,v)=>m.o[y*w+x]={t,v:v||0};
@@ -345,7 +345,7 @@ function buildMaps(){maps={forest:makeForest(),village:makeVillage(),cave:makeCa
 function solid(m,x,y){if(x<0||y<0||x>=m.w||y>=m.h)return true;const i=y*m.w+x;if(SOLIDG[m.g[i]])return true;const o=m.o[i];return!!(o&&!o.dead&&!o.walk)}
 function have(k){return(S.inv[k]||0)+((S.map==='village'||S.map==='cave'||(S.map==='lab'&&S.labRet&&S.labRet.m==='village'))?(S.storage[k]||0):0)}
 function rc(r){return r.id==='elixir'&&S.research.plat?{}:r.cost}
-function sc(cost){const r={},m=DF().c*((maps&&villagers().some(n=>n.id==='shepot'))?.8:1);for(const k in cost)r[k]=k==='plat'?cost[k]:Math.max(1,Math.round(cost[k]*m));return r}
+function sc(cost){if(cost._fix){const r=Object.assign({},cost);delete r._fix;return r}const r={},m=DF().c*((maps&&villagers().some(n=>n.id==='shepot'))?.8:1);for(const k in cost)r[k]=k==='plat'?cost[k]:Math.max(1,Math.round(cost[k]*m));return r}
 function can(cost){cost=sc(cost);for(const k in cost)if(have(k)<cost[k])return false;return true}
 function pay(cost){cost=sc(cost);for(const k in cost){let n=cost[k];const a=Math.min(n,S.inv[k]||0);S.inv[k]=(S.inv[k]||0)-a;n-=a;if(n)S.storage[k]=(S.storage[k]||0)-n}}
 function give(k,n){S.inv[k]=(S.inv[k]||0)+n}
@@ -389,7 +389,11 @@ const QUESTS=[
 {t:'Воздушный шар',d:'К крепости не подойти: часовые ловят всех. Изучи «Воздушный шар» в хижине у мачты (походная лаборатория) — дед Тарас приплывёт и сошьёт шар у лагеря.',p:()=>S.flags.balloon?'Шар готов!':S.balJob?`Тарас шьёт шар: ${Math.round(100*S.balJob.p/S.balJob.need)}%`:'Изучи «Воздушный шар» в хижине',ok:()=>S.flags.balloon},
 {t:'Разведка с неба',d:'Подойди к шару, выбери трёх участников полёта и взлетай над крепостью.',p:()=>'Шар стоит у лагеря на берегу',ok:()=>S.flags.scouted},
 {t:'Подготовка к войне',d:'Ты увидел арсенал врага. Выполни список в панели «Арсенал» (клавиша R или 🗺 → Арсенал).',p:()=>prepTxt(),ok:()=>prepDone()},
-{t:'Готовы к бою',d:'Отряд готов. Штурм крепости — следующая часть Главы 3.',p:()=>'Продолжение следует...',ok:()=>false}];
+{t:'Штурм крепости',d:'Подойди к воротам крепости и нажми E. Бой с Яром на сложном уровне. Победишь — крепость ваша. Проиграешь — потеряешь ВСЕ ресурсы и придётся готовиться заново.',p:()=>prepDone()?'Отряд готов — к воротам крепости!':'Сначала список «Арсенала»: '+prepTxt(),ok:()=>S.flags.warWon},
+{t:'Сигнал с Луны',d:'Ворота открыты. Зайди в крепость и посмотри на радар у радиостанции Корвина.',p:()=>'Радар — в центре крепости',ok:()=>S.flags.moonSig},
+{t:'Ракета «Искра-2»',d:'Вернись в деревню: на лугу справа (на востоке) появился стартовый стол. Закажи у деда Тараса 4 этапа ракеты — всего 10 000 ресурсов. Без работников и носильщиков не справиться!',p:()=>`Этапов: ${S.rocket||0}/4`+(S.rocketJob?` · Тарас строит ${Math.round(100*S.rocketJob.p/S.rocketJob.need)}%`:''),ok:()=>(S.rocket||0)>=4},
+{t:'Экипаж к Луне',d:'Подойди к ракете, выбери 5 сильных людей и нажми «Старт к Луне!».',p:()=>`Выбрано: ${(S.rcrew||[]).length}/5`,ok:()=>S.flags.launched},
+{t:'Луна',d:'Что ждёт экипаж на Луне?',p:()=>'To be continued',ok:()=>false}];
 const ACH=[
 ['wood','Первое полено','Добудь дерево',()=>(S.got.wood||0)>0],
 ['axe','Каменный век','Создай каменный топор',()=>S.inv.axe],
@@ -420,7 +424,10 @@ const ACH=[
 ['ch2','Глава 2','Найди источник сигнала',()=>S.flags.found],
 ['fort','Разведчик','Найди вражескую крепость',()=>S.flags.fortSeen],
 ['balloon','Выше облаков','Облети крепость на воздушном шаре',()=>S.flags.scouted],
-['ready','К бою готов','Выполни подготовку к войне',()=>prepDone()]];
+['ready','К бою готов','Выполни подготовку к войне',()=>prepDone()],
+['war','Крепость взята','Победи в штурме крепости',()=>S.flags.warWon],
+['rocket','Главный конструктор','Построй ракету',()=>(S.rocket||0)>=4],
+['moon','Маленький шаг','Долети до Луны',()=>S.flags.launched]];
 let achQ=[],achT=0;
 function checkAch(silent){for(const a of ACH)if(!S.ach[a[0]]&&a[3]()){S.ach[a[0]]=1;if(!silent){achQ.push(a[1]);sfx('ach');P.cheer=1}}}
 function workers(){return villagers().filter(n=>n.job).length}
@@ -455,7 +462,7 @@ function checkQuests(){let adv=false;while(S.q<QUESTS.length&&QUESTS[S.q].ok()){
   if(S.q>=13&&!S.flags.done2){S.flags.done2=1;say([['Хранительница Алия','Огонь, медь, лаборатория, проснувшиеся каменные люди... и даже Брок теперь с тобой. Ты вернул нам то, что мы считали сказкой.'],['Рен','Это только начало. Наука идёт шаг за шагом — и следующий шаг ведёт к морю.'],['','ГЛАВА 1 ЗАВЕРШЕНА!'],['Хранительница Алия','Предки говорили: за морем лежит другая земля. Никто не вернулся, чтобы проверить.'],['Рен','Значит, проверим мы. Нужен корабль — крепкий, с парусом и приборами. Начнём с чертежа.'],['','ГЛАВА 2. «МОРЕ». Новое задание — вверху слева.']])}
   if(S.q===17&&!S.flags.t17){S.flags.t17=1;say([['Гай','Последний гвоздь! Корабль готов, Рен. Пятьдесят человек поместятся с запасами.'],['Рен','Назовём его «Искра». Экипаж — на борт! Подойди к кораблю на причале и нажми «Действие».']])}}
  qT=questTarget();
- const q=QUESTS[S.q];$('qt').textContent=q?(S.q>=22?'Гл.3 · ':S.q>=13?'Гл.2 · ':'Гл.1 · ')+q.t:'Продолжение следует';$('qp').textContent=q?q.p():'Свободная игра';$('loc').textContent=NAMES[S.map];hud8()}
+ const q=QUESTS[S.q];$('qt').textContent=q?(S.q>=27?'Гл.4 · ':S.q>=22?'Гл.3 · ':S.q>=13?'Гл.2 · ':'Гл.1 · ')+q.t:'Продолжение следует';$('qp').textContent=q?q.p():'Свободная игра';$('loc').textContent=NAMES[S.map];hud8()}
 
 /* ---------- панели ---------- */
 let panelOpen=null,panelArg=null;
@@ -540,7 +547,7 @@ function pickObj(){const m=cur;if(!m||m.sea)return null;const d=DIRV[S.dir],f0=[
  return best}
 const PROMPT={tree:()=>S.inv.axe?'E — срубить':'E — отломать ветку',rock:()=>'E — подобрать камень',boulder:()=>S.inv.pick?'E — разбить валун':'Нужна кирка',bush:()=>'E — собрать волокно',berry:()=>'E — собрать ягоды',ore:()=>S.inv.pick?'E — добыть руду':'Нужна кирка',coal:()=>S.inv.pick?'E — добыть уголь':'Нужна кирка',
  statue:o=>o.broken&&!S.restored[o.id]?'Разбита — нужна Ульяна':o.rev?'Камень трескается...':'E — осмотреть',arch:()=>'E — на арену',site:()=>'Стройка Тараса',lab:()=>'E — войти в лабораторию',storage:()=>'E — склад',furnace:()=>'E — плавка',ship:()=>S.map==='village'?'E — корабль':'',plank:()=>'E — на корабль',radio:()=>'E — радио',plat:()=>S.inv.pick?'E — добыть платину':'Нужна кирка',cart:()=>'E — вагонетка (склад)',catalyst:()=>S.research.plat?'E — эликсир ∞':'E — осмотреть',radar:()=>'E — радар',wheel:()=>'E — к штурвалу',ladder:()=>'E — на палубу',mast:()=>'E — осмотреть',ltable:()=>'E — исследования',desk:()=>'E — крафт'};
-function interact(){if(!started||F)return;if(cut){cut.t=Math.max(cut.t,9.4);return}if(dq.length)return nextDlg();if(panelOpen)return;if(cur.sea)return seaAct();
+function interact(){if(!started||F)return;if(moon){if(moon.st===6&&moon.t>moon.end+2.5){moon=null;document.body.classList.remove('cut');save();showTitle(false);$('bCont').style.display=''}else if(dq.length)nextDlg();return}if(cut){cut.t=Math.max(cut.t,9.4);return}if(dq.length)return nextDlg();if(panelOpen)return;if(cur.sea)return seaAct();
  const d=DIRV[S.dir],fx=S.x+d[0]*11,fy=S.y-3+d[1]*11;
  let best=null,bd=22;for(const n of cur.npcs){const dd=Math.hypot(n.x-fx,n.y-3-fy);if(dd<bd){bd=dd;best=n}}
  const pk0=pickObj();if(best&&!(pk0&&objFirst(pk0.o)))return talk(best);
@@ -644,6 +651,7 @@ function update(dt){time+=dt*1000;
  if(dq.length&&!panelOpen&&!F){dlgT-=dt;if(dlgT<=0)nextDlg()}
  if(F)return updFight(dt);
  if(fly&&!cut){updFly(dt);return}
+ if(moon){updMoon(dt);return}
  if(cut){cut.t+=dt;S.dir=cut.t<7.8?0:cut.t<8.5?1:cut.t<9.2?2:0;if(cut.t>=9.5){cut=null;S.dir=0;document.body.classList.remove('cut');introTalk()}return}
  for(let i=revs.length-1;i>=0;i--){revs[i].rev-=dt;if(revs[i].rev<=0)doneRev(revs.splice(i,1)[0])}
  for(const k in maps){const m=maps[k];for(let i=m.dead.length-1;i>=0;i--){const o=m.dead[i];o.rt-=dt;if(o.rt<=0){const idx=m.o.indexOf(o),ox=idx%m.w,oy=idx/m.w|0;
@@ -849,7 +857,7 @@ function drawObj(o,X,Y,tx){const g=ctx;if(XOBJ[o.t])return XOBJ[o.t](g,o,X,Y,tx)
  case'barrel':px(g,'#9a6b3a',X+2,Y+1,12,14);px(g,'#5a3a1c',X+2,Y+3,12,1);px(g,'#5a3a1c',X+2,Y+11,12,1);px(g,'#3a2616',X+4,Y+1,8,2);px(g,'#b98a4a',X+3,Y+5,1,5);break;
  case'bench':px(g,'#8a5a2b',X+4,Y-1,8,15);px(g,'#a9743a',X+4,Y-1,8,1);px(g,'#5a3a1c',X+4,Y+14,8,2);break;}}
 let bubN=null;
-function render(){if(F)return renderFight();const m=cur;if(!m)return;if(m.sea)return renderSea();const mw=m.w*T,mh=m.h*T;
+function render(){if(F)return renderFight();if(moon)return renderMoon();const m=cur;if(!m)return;if(m.sea)return renderSea();const mw=m.w*T,mh=m.h*T;
  const PX=Q(S.x),PY=Q(S.y);let cx=mw<VW?Q((mw-VW)/2):Math.max(0,Math.min(Q(mw-VW),Q(PX-VW/2))),cy=mh<VH?Q((mh-VH)/2):Math.max(0,Math.min(Q(mh-VH),Q(PY-8-VH/2)));
  px(ctx,m.dark?'#0b0a10':m.name==='lab'?'#1c120b':m.name==='village'?'#2f7fc4':'#1f4d26',0,0,VW,VH);ctx.drawImage(m.bg,-cx,-cy);
  const x0=Math.max(0,(cx/T|0)-3),x1=Math.min(m.w-1,((cx+VW)/T|0)+1),y0=Math.max(0,(cy/T|0)-1),y1=Math.min(m.h-1,((cy+VH)/T|0)+3);
@@ -1013,7 +1021,7 @@ function statues(){const r=[];for(const k of['glade','village','forest','cave'])
 function idleWalk(n,m,dt){n.work=false;n.wt=(n.wt||0)-dt;if(n.wt>0)return;n.wt=2+Math.random()*3;const tx=n.x/T|0,ty=n.y/T|0,d=DIRV[Math.random()*4|0],nx=tx+d[0],ny=ty+d[1];if(!solid(m,nx,ny)&&Math.abs(nx-n.hx)<4&&Math.abs(ny-n.hy)<4&&m.g[ny*m.w+nx]!==PA)n.path=[ny*m.w+nx]}
 /* строитель */
 function updBuilder(n,m,dt){if(n.path.length)return stepPath(n,m,dt,46);n.moving=false;
- if(!S.sites[0]&&(S.shipJob||S.balJob)&&S.flags.duelWon)return updBig(n,m,dt);
+ if(!S.sites[0]&&(S.shipJob||S.balJob||S.rocketJob)&&S.flags.duelWon)return updBig(n,m,dt);
  const site=S.sites[0];
  if(!site||!S.flags.duelWon){n.msg='';if(m.name!=='village'){moveNpc(n,'village',15,11);return}return idleWalk(n,m,dt)}
  if(m.name!==site.m){moveNpc(n,site.m);n.msg='Иду на стройку!';return}
@@ -1086,12 +1094,12 @@ function makeCrew(){return CREWL.filter(c=>has(c[0])&&(!STONE.includes(c[0])||S.
 let F=null;const fk={};
 const ATK={p:{dur:.26,hit:.09,rng:58,dmg:6},k:{dur:.46,hit:.21,rng:66,dmg:10}};
 const EATK={p:{w:.34,dur:.62,rng:60,dmg:12,hits:1},k:{w:.56,dur:.92,rng:70,dmg:20,hits:1},c:{w:.3,dur:1.25,rng:62,dmg:9,hits:3,gap:.27}};
-function fdiff(){return[{hp:150,dmg:.5,sp:.78,c:.35},{hp:200,dmg:.75,sp:.88,c:.6},{hp:290,dmg:1.1,sp:1.02,c:.9}][S.diff!=null?S.diff:1]}
-function startFight(){closePanel();const d=fdiff();F={px:VW*.3,ex:VW*.7,php:100,ehp:d.hp,emax:d.hp,pa:null,pt:0,ea:null,ecd:1.2,phit:0,ehit:0,eblock:0,pblock:false,intro:2.2,over:0,win:false,pm:false,em:false,dodge:0,dcd:0,inv:0,stun:0,fl:'',flT:0};for(const k in fk)fk[k]=0;document.body.classList.add('fight');$('bub').style.display='none';$('fmsg').textContent='РАУНД 1';$('fmsg').style.display='block'}
+function fdiff(){if(F&&F.war)return warStats();return[{hp:150,dmg:.5,sp:.78,c:.35},{hp:200,dmg:.75,sp:.88,c:.6},{hp:290,dmg:1.1,sp:1.02,c:.9}][S.diff!=null?S.diff:1]}
+function startFight(){closePanel();const d=fdiff();F={px:VW*.3,ex:VW*.7,php:100,ehp:d.hp,emax:d.hp,pa:null,pt:0,ea:null,ecd:1.2,phit:0,ehit:0,eblock:0,pblock:false,intro:2.2,over:0,win:false,pm:false,em:false,dodge:0,dcd:0,inv:0,stun:0,fl:'',flT:0};for(const k in fk)fk[k]=0;document.body.classList.add('fight');$('bub').style.display='none';$('fmsg').textContent='РАУНД 1';$('fnames').lastElementChild.textContent='БРОК';$('fmsg').style.display='block'}
 function fAtk(a){if(F&&F.intro<=0&&F.over<=0&&!F.pa&&F.phit<=0&&F.dodge<=0){F.pa=a;F.pt=0;F.pdone=false}}
 function fDodge(){if(F&&F.intro<=0&&F.over<=0&&F.dcd<=0&&!F.pa&&F.phit<=0){F.dodge=.18;F.inv=.2;F.dcd=1.3}}
 function fFlash(t){F.fl=t;F.flT=.7}
-function endFight(){const w=F.win;F=null;document.body.classList.remove('fight');$('fmsg').style.display='none';const b=villagers().find(n=>n.id==='bork');
+function endFight(){if(F.war){const w=F.win;F=null;document.body.classList.remove('fight');$('fmsg').style.display='none';return warEnd(w)}const w=F.win;F=null;document.body.classList.remove('fight');$('fmsg').style.display='none';const b=villagers().find(n=>n.id==='bork');
  if(w){const first=!S.flags.duelWon;S.flags.duelWon=1;if(S.diff===2)S.flags.duelHard=1;if(b){b.hired=true;b.still=false;if(first){const[x,y]=freeSpot(maps.village,16,15);moveNpc(b,'village',x,y)}}
   say([['Брок','Уф... Ты бьёшь не сильно, но точно. И уходишь от ударов, как ветер.'],['Рен','Сила — это масса на ускорение. А ещё расчёт и терпение.'],['Брок','Ха! Ладно, учёный. Мост твой. Иди, хранительница Алия ждёт тебя в деревне.']],()=>{checkQuests();save()})}
  else say([['Брок','Ха-ха! Слабовато! Приходи, когда научишься уворачиваться.'],['Рен','Красный «!» — он замахивается. Но иногда это обман... Надо смотреть внимательнее.']])}
@@ -1129,12 +1137,12 @@ function renderFight(){const f=F,g=ctx,gy=Math.round(VH*.58),fy=gy+16,rage=f.ehp
  fig({pal:PAL.ren,dir:2,moving:f.pm||f.dodge>0,work:false,seed:0},f.px,f.phit);
  const wind=f.ea&&f.ea.t<EATK[f.ea.type].w;
  if(rage){g.globalAlpha=.25+.15*Math.sin(time/80);px(g,'#ff3a2a',Math.round(f.ex)-16,fy-74,32,74);g.globalAlpha=1}
- fig({pal:PAL.bork,dir:1,moving:f.em,work:!!wind,seed:1},f.ex,f.ehit);
+ fig({pal:(F.war?PAL.yar:PAL.bork),dir:1,moving:f.em,work:!!wind,seed:1},f.ex,f.ehit);
  if(wind&&Math.floor(time/80)%2){const X=Math.round(f.ex)-2,Y=fy-90;px(g,'#1d1a24',X-1,Y-1,6,14);px(g,'#ff4a3a',X,Y,4,8);px(g,'#ff4a3a',X,Y+10,4,3)}
  if(f.stun>0){for(let i=0;i<3;i++)px(g,'#ffd978',Math.round(f.ex+Math.cos(time/120+i*2)*12),Math.round(fy-80+Math.sin(time/120+i*2)*4),3,3)}
  if(f.pa==='p'&&f.pt>.04&&f.pt<.22)px(g,PAL.ren.skin,Math.round(f.px)+12,fy-42,13,5);
  if(f.pa==='k'&&f.pt>.14&&f.pt<.4)px(g,PAL.ren.legs,Math.round(f.px)+8,fy-14,20,5);
- if(f.ea&&!f.ea.feint){const a=f.ea,A=EATK[a.type];for(let i=0;i<A.hits;i++){const t0=A.w+(A.gap||0)*i;if(a.t>=t0&&a.t<t0+.13){if(a.type==='k')px(g,PAL.bork.legs,Math.round(f.ex)-30,fy-14,22,6);else px(g,PAL.bork.skin,Math.round(f.ex)-27,fy-43+(i%2)*6,14,6)}}}
+ if(f.ea&&!f.ea.feint){const a=f.ea,A=EATK[a.type];for(let i=0;i<A.hits;i++){const t0=A.w+(A.gap||0)*i;if(a.t>=t0&&a.t<t0+.13){if(a.type==='k')px(g,(F.war?PAL.yar:PAL.bork).legs,Math.round(f.ex)-30,fy-14,22,6);else px(g,(F.war?PAL.yar:PAL.bork).skin,Math.round(f.ex)-27,fy-43+(i%2)*6,14,6)}}}
  if(f.pblock){px(g,'#9fd3ff',Math.round(f.px)+15,fy-66,3,60);px(g,'#fff',Math.round(f.px)+15,fy-66,3,3)}
  if(f.eblock>0)px(g,'#e8c26a',Math.round(f.ex)-19,fy-66,3,60);
  if(f.flT>0){g.font='bold 9px monospace';g.textAlign='center';g.fillStyle='#10141c';g.fillText(f.fl,Math.round(f.px)+1,fy-79);g.fillStyle='#ffd978';g.fillText(f.fl,Math.round(f.px),fy-80)}
@@ -1145,7 +1153,7 @@ function renderFight(){const f=F,g=ctx,gy=Math.round(VH*.58),fy=gy+16,rage=f.ehp
 document.querySelectorAll('#fight button').forEach(b=>{const k=b.dataset.f;b.addEventListener('pointerdown',e=>{e.preventDefault();if(k==='p'||k==='k')fAtk(k);else if(k==='u')fDodge();else fk[k]=1});for(const ev of['pointerup','pointercancel','pointerleave'])b.addEventListener(ev,()=>fk[k]=0)});
 
 /* ---------- запуск ---------- */
-let last=0;function loop(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;update(dt);if(FAST&&started&&!F&&!cut&&!fly&&!dq.length)update(dt);if(started)render();requestAnimationFrame(loop)}
+let last=0;function loop(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;update(dt);if(FAST&&started&&!F&&!cut&&!fly&&!moon&&!dq.length)update(dt);if(started)render();requestAnimationFrame(loop)}
 function start(state,fresh){S=state;S.revived=S.revived||{};S.ship=S.ship||0;S.sites=S.sites||[];S.found=S.found||{};S.restored=S.restored||{};S.pg=S.pg||[];S.got=S.got||{};S.ach=S.ach||{};if(S.diff==null)S.diff=1;achQ=[];revs=[];F=null;document.body.classList.remove('fight');buildMaps();started=true;$('title').style.display='none';setMapClass();unstick();checkQuests();checkAch(true);
  cut=null;document.body.classList.remove('cut');if(fresh){cut={t:0};document.body.classList.add('cut')}}
 /* ================= v8: карта, формулы, враги, шар, звук ================= */
@@ -1215,7 +1223,11 @@ const HOW=[()=>{const i=S.inv;return(i.wood||0)<4?'Подойди к дерев�
  ()=>'E → курс «К источнику сигнала» → у берега «Высадиться»',()=>'Иди по следам на восток к высокой мачте',
  ()=>'Иди дальше на восток по тропе. Не подходи к часовым!',
  ()=>S.flags.balloon?'Готово!':S.balJob?'Тарас шьёт шар у лагеря — подожди':'Хижина у мачты → E → «Воздушный шар»',
- ()=>'Подойди к шару → E → выбери 3 участников → Взлететь',()=>'Нажми R («Арсенал»): '+prepTxt(),()=>'Продолжение скоро!'];
+ ()=>'Подойди к шару → E → выбери 3 участников → Взлететь',()=>'Нажми R («Арсенал»): '+prepTxt(),
+ ()=>prepDone()?'Подойди к воротам крепости → E → «В бой!»':'Выполни список «Арсенала» (R): '+prepTxt(),
+ ()=>'Зайди в крепость → радиостанция в центре → E',
+ ()=>S.rocketJob?'Тарас строит ракету. Назначь носильщиков и добытчиков!':'Деревня → луг справа → ракета → E → «Заказать Тарасу»',
+ ()=>'Ракета → E → выбери 5 человек → «Старт к Луне!»',()=>'To be continued'];
 function howTxt(){const f=HOW[S.q];return f?f():(QUESTS[S.q]||{}).d||''}
 function hud8(){const q=QUESTS[S.q];$('qh').textContent=q?'▶ '+howTxt():'';
  if(q&&S.q!==banQ&&!cut&&!dq.length&&!F&&!fly&&!panelOpen){banQ=S.q;$('qban').innerHTML=`<small>ЗАДАНИЕ ${S.q+1} из ${QUESTS.length}</small><b>${q.t}</b><span>${q.d}</span><i>▶ ${howTxt()}</i>`;$('qban').style.display='block';banT=6.5}}
@@ -1260,27 +1272,27 @@ function drawMini(m){const mc=$('mini');if(m.sea)return;mc.style.display='block'
  g.fillStyle=Math.floor(time/250)%2?'#ffffff':'#5fd0ff';g.fillRect(ox+S.x/T*k-2,oy+S.y/T*k-2,4,4);
  g.fillStyle='#1d2433';g.fillRect(0,0,W,11);g.fillStyle='#ffd978';g.font='bold 9px monospace';g.textAlign='center';g.font='bold 8px monospace';g.fillText((NAMES[m.name]||'')+' · M',W/2,8)}
 /* ---------- Тарас, Арсен, носильщики, защитники ---------- */
-function tarasLine(){if(S.shipJob)return`Строю корабль: «${STAGES[S.shipJob.i].n}» — ${Math.round(100*S.shipJob.p/S.shipJob.need)}%. Носильщики и Арсен ускоряют!`;
+function tarasLine(){if(S.rocketJob)return`Строю ракету: «${RSTAGES[S.rocketJob.i].n}» — ${Math.round(100*S.rocketJob.p/S.rocketJob.need)}%. На Луну — так на Луну!`;if(S.shipJob)return`Строю корабль: «${STAGES[S.shipJob.i].n}» — ${Math.round(100*S.shipJob.p/S.shipJob.need)}%. Носильщики и Арсен ускоряют!`;
  if(S.balJob)return`Шью воздушный шар у лагеря: ${Math.round(100*S.balJob.p/S.balJob.need)}%.`;
  if(S.sites.length)return`Строю: ${(BUILDS.find(b=>b.id===S.sites[0].t)||{}).n||'здание'}. Не торопи старика!`;
  return'Заказы — через 🏠 «Стройка» и корабль на причале. Я сам приду и построю. Работу мне давать не нужно!'}
-function updBig(n,m,dt){const J=S.shipJob?{map:'village',x:20,y:31,f:[21,32],n:STAGES[S.shipJob.i].n,o:S.shipJob}:{map:'newland',x:23,y:11,f:[24,10],n:'Воздушный шар',o:S.balJob};
+function updBig(n,m,dt){const J=S.shipJob?{map:'village',x:20,y:31,f:[21,32],n:STAGES[S.shipJob.i].n,o:S.shipJob}:S.rocketJob?{map:'village',x:RKX-2,y:RKY,f:[RKX,RKY],n:'Ракета: '+RSTAGES[S.rocketJob.i].n,o:S.rocketJob}:{map:'newland',x:23,y:11,f:[24,10],n:'Воздушный шар',o:S.balJob};
  if(m.name!==J.map){moveNpc(n,J.map,J.x,J.y);n.msg='Иду строить: '+J.n;return}
  const tx=n.x/T|0,ty=n.y/T|0;if(tx!==J.x||ty!==J.y){const p=bfsTo(m,tx,ty,J.x,J.y);if(p&&p.length&&p.length<80){n.path=p;n.msg='Иду строить: '+J.n;return}n.x=J.x*T+8;n.y=J.y*T+12}
  face(n,J.f[0],J.f[1]);n.work=true;n.moving=false;
  const ar=villagers().find(v=>v.id==='arsen'),arH=ar&&mapOf(ar)===m.name&&Math.hypot(ar.x-n.x,ar.y-n.y)<44,hl=villagers().filter(v=>v.job==='help'&&mapOf(v)===m.name).length;
  J.o.p+=dt*(1+(arH?.6:0)+hl*.5);const pc=Math.min(100,Math.round(100*J.o.p/J.o.need));n.msg=`Строю: ${J.n} ${pc}%`+(arH?' · Арсен помогает':'');
- if(J.o.p>=J.o.need){n.work=false;if(S.shipJob){S.ship++;S.shipJob=null;toast('⚓ Тарас достроил: '+J.n);sfx('build');P.cheer=1;checkQuests()}
+ if(J.o.p>=J.o.need){n.work=false;if(S.rocketJob&&J.o===S.rocketJob){S.rocket=(S.rocket||0)+1;S.rocketJob=null;toast('🚀 Тарас достроил: '+J.n);sfx('build');P.cheer=1;checkQuests()}else if(S.shipJob){S.ship++;S.shipJob=null;toast('⚓ Тарас достроил: '+J.n);sfx('build');P.cheer=1;checkQuests()}
   else{S.balJob=null;S.flags.balloon=1;maps.newland.o[10*maps.newland.w+24]={t:'balloon'};toast('🎈 Воздушный шар готов!');sfx('build');checkQuests()}save()}}
 function updPorter(n,m,dt){if(n.path.length)return stepPath(n,m,dt,52);n.moving=false;n.work=false;
- const s0=S.sites[0],J=s0?{map:s0.m,x:s0.x,y:s0.y,site:1}:S.shipJob?{map:'village',x:20,y:30}:S.balJob?{map:'newland',x:22,y:11}:null;
+ const s0=S.sites[0],J=s0?{map:s0.m,x:s0.x,y:s0.y,site:1}:S.shipJob?{map:'village',x:20,y:30}:S.rocketJob?{map:'village',x:RKX-2,y:RKY-1}:S.balJob?{map:'newland',x:22,y:11}:null;
  if(!J){n.carry=0;n.msg='Жду, когда Тарас начнёт стройку';if(m.name!=='village'){const[x,y]=freeSpot(maps.village,21,13);moveNpc(n,'village',x,y);return}return idleWalk(n,m,dt)}
  if(m.name!==J.map){moveNpc(n,J.map);n.carry=0;return}
  const tx=n.x/T|0,ty=n.y/T|0;
  if(!n.carry){const src=J.map==='village'?[20,11]:J.map==='newland'?[30,8]:[J.x+2,J.y];
   if(Math.abs(tx-src[0])+Math.abs(ty-src[1])<=1||J.map==='cave'){n.carry=1;n.msg='Несу материалы Тарасу';return}
   const p=bfsTo(m,tx,ty,src[0],src[1]);if(p&&p.length>1){n.path=p.slice(0,-1);n.msg='Иду на склад за материалами'}else n.carry=1;return}
- if(Math.abs(tx-J.x)+Math.abs(ty-J.y)<=1){n.carry=0;if(J.site)s0.prog+=1.6;else(S.shipJob||S.balJob).p+=2.2;n.msg='Принёс! Ещё ходка...';n.wt=.6;return}
+ if(Math.abs(tx-J.x)+Math.abs(ty-J.y)<=1){n.carry=0;if(J.site)s0.prog+=1.6;else(S.shipJob||S.rocketJob||S.balJob).p+=2.2;n.msg='Принёс! Ещё ходка...';n.wt=.6;return}
  const p=bfsTo(m,tx,ty,J.x,J.y);if(p&&p.length){n.path=J.site?p.slice(0,-1):p;n.msg='Несу материалы Тарасу'}else{n.carry=0;n.msg='Не пройти к стройке'}}
 function updGuard(n,m,dt){if(n.path.length)return stepPath(n,m,dt,44);n.moving=false;n.carry=0;n.work=false;
  if(m.name!=='village'){moveNpc(n,'village',20,12);return}
@@ -1289,7 +1301,7 @@ function updGuard(n,m,dt){if(n.path.length)return stepPath(n,m,dt,44);n.moving=f
  n.dir=k===2?0:3;n.msg='Охраняю деревню!'+((S.inv.shield||0)?' Щит при мне':'')}
 const FOLLOWM={village:1,forest:1,glade:1,cave:1,newland:1};
 function behind(){const d=DIRV[S.dir],tx=S.x/T|0,ty=(S.y-2)/T|0;for(const k of[1,2])for(const[ox,oy]of[[-d[0]*k,-d[1]*k],[d[1]*k,d[0]*k],[-d[1]*k,-d[0]*k]]){const x=tx+ox,y=ty+oy;if(!solid(cur,x,y))return[x,y]}return[tx,ty]}
-function updFollow(n,m,dt){if(S.shipJob||S.balJob||S.sites.length)return updHelper(n,m,dt);
+function updFollow(n,m,dt){if(S.shipJob||S.balJob||S.rocketJob||S.sites.length)return updHelper(n,m,dt);
  n.work=false;if(!FOLLOWM[S.map]){if(n.path.length)return stepPath(n,m,dt,60);n.moving=false;n.msg='Жду тебя тут, Рен';return}
  n.msg='';if(m.name!==S.map){const b=behind();moveNpc(n,S.map,b[0],b[1]);return}
  const d=Math.hypot(S.x-n.x,S.y-n.y);
@@ -1310,7 +1322,7 @@ function updFoes(dt){const m=maps.newland;if(!m||!m.foes)return;caughtT=Math.max
  for(const f of m.foes){const t=f.route[f.ri%f.route.length],gx=t[0]*T+8,gy=t[1]*T+12,dx=gx-f.x,dy=gy-f.y,l=Math.hypot(dx,dy);
   if(f.sp&&l>1){const st=Math.min(l,f.sp*mul*dt);f.x+=dx/l*st;f.y+=dy/l*st;f.moving=true;f.dir=Math.abs(dx)>Math.abs(dy)?(dx<0?1:2):(dy<0?3:0)}else{f.moving=false;if(f.route.length>1)f.ri=(f.ri+1)%f.route.length;else f.dir=1}
   if(S.map!=='newland')continue;const d=Math.hypot(S.x-f.x,S.y-f.y);f.alert=d<R*2.2;
-  if(d<R&&!busy()&&caughtT<=0){caughtT=3;sfx('caught');S.x=16*T+8;S.y=13*T+12;S.dir=2;P.work=null;S.stats.caught=(S.stats.caught||0)+1;
+  if(d<R&&!busy()&&caughtT<=0&&!prepDone()&&!S.flags.warWon){caughtT=3;sfx('caught');S.x=16*T+8;S.y=13*T+12;S.dir=2;P.work=null;S.stats.caught=(S.stats.caught||0)+1;
    say([[f.name,f.line],['Рен',S.flags.scouted?'Без подготовки туда нельзя. Сначала — список из «Арсенала» (R).':'Их слишком много... Нужно разведать крепость сверху.']])}}}
 function prepList(){const cnt=k=>(S.inv[k]||0)+(S.storage[k]||0);return[['🛡 Медные щиты',cnt('shield'),6,'🔨 у плавильной печи: 2 слитка + 2 дерева'],['💨 Дымовые шашки',cnt('smoke'),4,'🔨 в лаборатории: уголь + волокно + ягоды'],['⚔ Защитники',villagers().filter(v=>v.job==='guard').length,3,'Поговори с жителем → работа «Защитник»'],['📻 Рации',S.research.walkie?1:0,1,'Лаборатория → исследование «Рации»']]}
 function prepDone(){return!!(S&&S.flags&&S.flags.scouted)&&prepList().every(p=>p[1]>=p[2])}
@@ -1340,7 +1352,7 @@ function updFly(dt){const D=22;fly.t+=dt;const k=Math.min(1,fly.t/D),u=k<.5?k*2:
  if(fly.st===0&&fly.t>7){fly.st=1;const c=fly.c;say([[nm(c[1]),'Вижу стены! И пушки — три штуки на стенах.'],[nm(c[2]),'На дороге часовой с длинной винтовкой. Снайпер!'],[nm(c[0]),'А в центре — палатка с антенной. Это их радио!'],['Рен','Учёный-командир, снайпер, штурмовик, разведчица и артиллерист. Запоминаем всё.']])}
  if(fly.t>=D&&!dq.length){S.x=fly.sx;S.y=fly.sy;fly=null;S.flags.scouted=1;P.cheer=1;checkQuests();save();say([['Рен','Разведка окончена! Теперь мы знаем их силы.'],['Рен','Открываю «Арсенал» — там список, что нужно сделать, чтобы победить.']],()=>openPanel('arsenal'))}}
 /* ---------- объекты ---------- */
-function xInteract(pk){if(!pk)return false;const o=pk.o;
+function xInteract(pk){if(!pk)return false;const o=pk.o;if(xInteract10(pk))return true;
  if(o.t==='shack'&&S.flags.found){toast('🧪 Походная лаборатория');openPanel('research');return true}
  if(o.t==='balloon'){if(S.flags.scouted&&!S.bcrew)S.bcrew=[];openPanel('balloon');return true}
  if(o.t==='bsite'){toast(`Тарас шьёт шар: ${S.balJob?Math.round(100*S.balJob.p/S.balJob.need):100}%`);return true}
@@ -1356,6 +1368,9 @@ function qt8(q){const N=(x,y)=>({m:'newland',x:x*T+8,y:y*T+8});
  if(q===22)return S.map==='newland'?N(46,13):null;
  if(q===23)return S.map==='newland'?(S.research.balloon?N(24,10):N(30,8)):null;
  if(q===24)return S.map==='newland'?N(24,10):null;
+ if(q===26)return S.map==='newland'?N(65,13):null;
+ if(q===27)return S.map==='newland'?N(79,13):null;
+ if(q===28||q===29)return{m:'village',x:RKX*T+8,y:RKY*T};
  if(q===25){const L=prepList();if(L[0][1]<6)return bT('furnace');if(L[1][1]<4||!S.research.walkie)return S.map==='newland'?N(30,8):labT(8,6);if(L[2][1]<3){const n=maps.village.npcs.find(n=>n.job!=='guard'&&!n.still&&n.id!=='taras');return n?{m:'village',x:n.x,y:n.y-8}:null}}
  return null}
 const XOBJ={
@@ -1399,13 +1414,104 @@ function afterRender(m,cx,cy){const g=ctx;
  if(fly&&m.name==='newland')drawBalloon(g,S.x-cx,S.y-cy-70,fly.c);
  if(!F&&!cut){miniT-=1/30;drawMini(m)}}
 /* ---------- каждый кадр ---------- */
-function tick8(dt){if(panelOpen&&banT>0)banT=.01;if(banT>0){banT-=dt;if(banT<=0)$('qban').style.display='none'}if(sciT>0){sciT-=dt;if(sciT<=0)$('sci').style.display='none'}
+function tick8(dt){tick10();if(panelOpen&&banT>0)banT=.01;if(banT>0){banT-=dt;if(banT<=0)$('qban').style.display='none'}if(sciT>0){sciT-=dt;if(sciT<=0)$('sci').style.display='none'}
  stepT-=dt;if(P.moving&&stepT<=0){stepT=RUN()?.22:.34;sfx('step')}
  if(S.research.balloon&&!S.balJob&&!S.flags.balloon){S.balJob={p:0,need:[22,32,42][S.diff!=null?S.diff:1]};const m=maps.newland;m.o[10*m.w+24]={t:'bsite'};
   say([['Рен','Чертёж шара готов! Ткань из волокна, горелка на угле.'],['Рен','Дед Тарас приплывёт и сошьёт шар прямо у лагеря. Носильщики помогут.']])}
  updFoes(dt);
  if(S.map==='newland'&&S.flags.found&&!S.flags.fortSeen&&S.x>43*T&&!busy()){S.flags.fortSeen=1;P.cheer=1;
   say([['Рен','Стоп... Впереди — каменные стены! Крепость с башнями и пушками.'],['Рен','По дорогам за красными флажками ходят часовые. Подойдёшь близко — поймают.'],['Рен','Тот, кто послал сигнал, собрал целую армию. Нужно увидеть крепость сверху.'],['Рен','Воздушный шар! Горячий воздух легче холодного. Хижину у мачты сделаю походной лабораторией.']],()=>{checkQuests();save()})}}
+
+/* ================= v10: штурм, сигнал с Луны, ракета, финал ================= */
+const RKX=35,RKY=18;
+const RSTAGES=[{n:'Стартовый стол',cost:{stone:1500,wood:1000,_fix:1},d:'Бетонная площадка и башня обслуживания',f:['Давление: p = F / S','Широкое основание держит тяжёлую ракету']},
+ {n:'Двигатели',cost:{ingot:1200,coal:1300,_fix:1},d:'Медные сопла и камеры сгорания',f:['Реактивная тяга: F = ṁ · v','Газ вылетает вниз — ракета летит вверх (3-й закон Ньютона)']},
+ {n:'Топливные баки',cost:{ingot:800,coal:700,fiber:1000,_fix:1},d:'Баки для горючего и окислителя',f:['C + O₂ → CO₂ + энергия','Горючему нужен окислитель — в космосе нет воздуха']},
+ {n:'Корпус и кабина',cost:{wood:1000,fiber:600,ingot:500,stone:400,_fix:1},d:'Обтекатель, иллюминаторы, кресла для экипажа',f:['v₁ ≈ 7,9 км/с','Первая космическая скорость — чтобы не упасть обратно']}];
+function rocketTotal(){return RSTAGES.reduce((a,s)=>a+Object.keys(s.cost).filter(k=>k!=='_fix').reduce((b,k)=>b+s.cost[k],0),0)}
+/* --- штурм --- */
+function warStats(){const sh=(S.inv.shield||0)+(S.storage.shield||0)>=6,sm=(S.inv.smoke||0)+(S.storage.smoke||0)>=4;return{hp:300,dmg:1.2*(sh?.85:1),sp:1.06*(sm?.92:1),c:.95}}
+function startWar(){closePanel();startFight();F.war=1;const d=warStats();F.ehp=F.emax=d.hp;$('fnames').lastElementChild.textContent='ЯР';$('fmsg').textContent='ШТУРМ!';sfx('fire')}
+function warEnd(w){if(w){S.flags.warWon=1;P.cheer=1;const m=maps.newland;m.foes=[];for(let y=13;y<=14;y++)m.o[y*m.w+66]=null;sfx('quest');
+  say([['Яр','Хватит... Сдаюсь! Ваши щиты и дым — я такого не видел.'],['Проф. Корвин','Опустите оружие. Ваша наука победила честно.'],['Проф. Корвин','Я не просто так звал на помощь. Мой радар ловит второй сигнал. Он идёт... с Луны.'],['Рен','С Луны?! Покажи радар! Он у радиостанции в центре крепости?'],['Проф. Корвин','Ворота открыты. Иди и смотри сам.']],()=>{checkQuests();save()})}
+ else{for(const k of['wood','stone','fiber','berry','ore','coal','ingot','plat','spirit','hno3','elixir','shield','smoke']){S.inv[k]=0;S.storage[k]=0}S.x=16*T+8;S.y=13*T+12;sfx('caught');
+  say([['Яр','Ха! Отступайте, дикари! Всё ваше — теперь наше!'],['Рен','Мы потеряли все ресурсы... Щиты, дым, слитки — всё.'],['Рен','Ничего. Жители соберут всё заново. Снова готовимся по «Арсеналу» — и в бой.']],()=>{checkQuests();save()})}}
+/* --- финал --- */
+let moon=null;
+function startLaunch(){closePanel();const c=S.rcrew.slice();moon={t:0,c,st:0};S.flags.launched=1;save();document.body.classList.add('cut');sfx('fire')}
+function updMoon(dt){moon.t+=dt;const t=moon.t,c=moon.c;
+ if(t<7&&Math.floor(t*6)!==moon.r){moon.r=Math.floor(t*6);if(SND&&ac())noise(.25,.12,300)}
+ if(moon.st===0&&t>10){moon.st=1;say([['Рен','Мы на Луне! Камень, пыль и тишина... А Земля — вон она, голубая.'],[nm(c[0]),'Сигнал совсем рядом. Вон за тем кратером!'],[nm(c[1]),'Рен... там что-то движется.']])}
+ if(moon.st===1&&t>12&&!dq.length){moon.st=2;moon.sq=t;sfx('radio')}
+ if(moon.st===2&&t>moon.sq+2.5){moon.st=3;say([['???','■ ■ ■'],['Рен','Это не человек... и не машина. Это оно посылало сигнал?!'],['???','■ ■ ■ ■ ■']])}
+ if(moon.st===3&&!dq.length){moon.st=4;moon.fl=t;sfx('revive')}
+ if(moon.st===4&&t>moon.fl+1.2){moon.st=5;moon.stone=t;S.flags.ending=1;save()}
+ if(moon.st===5&&t>moon.stone+3.5){moon.st=6;moon.end=t}}
+function renderMoon(){const g=ctx,t=moon.t,W=VW,H=VH;
+ if(t<8){// взлёт
+  const k=Math.min(1,t/7),sky=g.createLinearGradient(0,0,0,H);sky.addColorStop(0,`rgb(${Math.round(60*(1-k))},${Math.round(120*(1-k))},${Math.round(200*(1-k))+10})`);sky.addColorStop(1,`rgb(${Math.round(150*(1-k))},${Math.round(200*(1-k))},${Math.round(240*(1-k))+20})`);g.fillStyle=sky;g.fillRect(0,0,W,H);
+  for(let i=0;i<80;i++){g.globalAlpha=k;px(g,'#fff',(i*97)%W,(i*53+t*40*k)%H,1,1)}g.globalAlpha=1;
+  const gy=H*.82+k*k*H*1.2;px(g,'#3f7f3a',0,gy,W,H);px(g,'#2f6fb0',0,gy+30,W,H);
+  const ry=H*.72-Math.max(0,t-1.5)*Math.max(0,t-1.5)*14,sh=t<1.5?Math.round(Math.sin(time/25)*1.5):0;drawRocket(g,W/2+sh,ry,1.2,4,t>.6);
+  if(t<2){g.globalAlpha=.6;for(let i=0;i<8;i++){g.fillStyle='#ddd';g.beginPath();g.arc(W/2-40+i*11,H*.75+Math.sin(i+t*3)*3,10+t*6,0,6.283);g.fill()}g.globalAlpha=1}
+  if(t>6.5){g.fillStyle=`rgba(0,0,0,${(t-6.5)/1.5})`;g.fillRect(0,0,W,H)}return}
+ // Луна
+ g.fillStyle='#05060c';g.fillRect(0,0,W,H);for(let i=0;i<120;i++)px(g,i%7?'#cfd8ff':'#fff',(i*131)%W,(i*71)%(H*.6),1,1);
+ g.fillStyle='#2f6fb0';g.beginPath();g.arc(W*.8,H*.18,18,0,6.283);g.fill();g.fillStyle='#3f8f55';g.beginPath();g.arc(W*.8-5,H*.18-4,7,0,6.283);g.arc(W*.8+7,H*.18+5,5,0,6.283);g.fill();
+ const gy=Math.round(H*.62);g.fillStyle='#8a8a94';g.fillRect(0,gy,W,H-gy);g.fillStyle='#9d9da8';g.fillRect(0,gy,W,3);
+ for(let i=0;i<14;i++){const cx=(i*173)%W,cy=gy+12+(i*37)%(H-gy-16),r=4+(i*7)%12;g.fillStyle='#6e6e78';g.beginPath();g.ellipse(cx,cy,r,r*.35,0,0,6.283);g.fill();g.fillStyle='#a8a8b2';g.beginPath();g.ellipse(cx,cy-1,r,r*.18,0,Math.PI,6.283);g.fill()}
+ drawRocket(g,W*.16,gy+6,.8,4,false);
+ const people=[{pal:PAL.ren}].concat(moon.c.map(id=>{const v=villagers().find(v=>v.id===id);return v?{pal:v.pal}:null}).filter(Boolean)),stone=moon.st>=5;
+ people.forEach((p,i)=>{const x=W*.32+i*Math.min(34,W*.07),y=gy+24;g.save();g.translate(Math.round(x),y);g.scale(2,2);if(stone){px(g,'rgba(0,0,0,.25)',-5,-2,10,3);g.drawImage(stoneOf(p.pal),-9,-25)}else drawChar({pal:p.pal,dir:2,seed:i},0,0);g.restore()});
+ if(moon.st>=2){const k=Math.min(1,(t-moon.sq)/2),x=W*.8,y=gy-30-Math.sin(time/400)*6,s=Math.round(26*k);
+  g.fillStyle=`rgba(150,60,255,${.25*k})`;g.fillRect(x-s-8,y-s-8,s*2+16,s*2+16);g.fillStyle='#120a1e';g.fillRect(x-s,y-s,s*2,s*2);g.strokeStyle='#b06aff';g.lineWidth=2;g.strokeRect(x-s,y-s,s*2,s*2);
+  if(k>.7){const e=Math.floor(time/300)%7?4:1;px(g,'#ff4aff',x-12,y-6,7,e);px(g,'#ff4aff',x+5,y-6,7,e)}
+  g.font='bold 10px monospace';g.textAlign='center';g.fillStyle='#e0c0ff';g.fillText('???',x,y-s-12)}
+ if(moon.st===4){const a=Math.min(1,(t-moon.fl)/1.2);g.fillStyle=`rgba(255,255,255,${a})`;g.fillRect(0,0,W,H)}
+ if(moon.st===5){const a=Math.max(0,1-(t-moon.stone)/1);g.fillStyle=`rgba(255,255,255,${a})`;g.fillRect(0,0,W,H)}
+ if(moon.st===6){const a=Math.min(1,(t-moon.end)/1.5);g.fillStyle=`rgba(0,0,0,${a*.9})`;g.fillRect(0,0,W,H);g.globalAlpha=a;g.textAlign='center';g.font='bold 30px monospace';g.fillStyle='#7a3b2e';g.fillText('To be continued',W/2+3,H*.45+3);g.fillStyle='#ffd978';g.fillText('To be continued',W/2,H*.45);
+  g.font='11px monospace';g.fillStyle='#cfd8e8';g.fillText('Продолжение следует...',W/2,H*.45+22);if(t>moon.end+2.5){g.fillStyle='#9fb0cc';g.fillText('Нажми E или «Действие» — в главное меню',W/2,H*.45+44)}g.globalAlpha=1}}
+function drawRocket(g,x,y,sc,stage,fire){g.save();g.translate(Math.round(x),Math.round(y));g.scale(sc,sc);
+ if(fire){const f=Math.floor(time/60)%3;g.fillStyle='#ff6a2a';g.beginPath();g.moveTo(-12,0);g.lineTo(0,34+f*6);g.lineTo(12,0);g.fill();g.fillStyle='#ffd978';g.beginPath();g.moveTo(-7,0);g.lineTo(0,22+f*4);g.lineTo(7,0);g.fill();g.fillStyle='#fff';g.beginPath();g.moveTo(-3,0);g.lineTo(0,10);g.lineTo(3,0);g.fill()}
+ if(stage>=2){g.fillStyle='#5a5662';g.fillRect(-13,-8,8,8);g.fillRect(5,-8,8,8);g.fillStyle='#d08a4a';g.fillRect(-12,-2,6,2);g.fillRect(6,-2,6,2)}
+ if(stage>=3){const bd=g.createLinearGradient(-14,0,14,0);bd.addColorStop(0,'#b8bcc8');bd.addColorStop(.45,'#ffffff');bd.addColorStop(1,'#8a8e9a');g.fillStyle=bd;g.fillRect(-14,-70,28,62);g.fillStyle='#d93a4a';g.fillRect(-14,-46,28,5);g.fillRect(-14,-20,28,4);
+  g.fillStyle='#d93a4a';g.beginPath();g.moveTo(-14,-30);g.lineTo(-26,-2);g.lineTo(-14,-10);g.fill();g.beginPath();g.moveTo(14,-30);g.lineTo(26,-2);g.lineTo(14,-10);g.fill();g.fillStyle='#a02a36';g.fillRect(-2,-26,4,22)}
+ if(stage>=4){const nc=g.createLinearGradient(-14,0,14,0);nc.addColorStop(0,'#c03040');nc.addColorStop(.5,'#ff6a6a');nc.addColorStop(1,'#902030');g.fillStyle=nc;g.beginPath();g.moveTo(-14,-70);g.quadraticCurveTo(-12,-96,0,-108);g.quadraticCurveTo(12,-96,14,-70);g.fill();
+  for(const wy of[-62,-38]){g.fillStyle='#3a3a44';g.beginPath();g.arc(0,wy,6,0,6.283);g.fill();g.fillStyle='#7fd0ff';g.beginPath();g.arc(0,wy,4.3,0,6.283);g.fill();g.fillStyle='#fff';g.fillRect(-2,wy-3,2,2)}
+  g.font='bold 6px monospace';g.textAlign='center';g.fillStyle='#1d2433';g.save();g.translate(0,-50);g.rotate(-Math.PI/2);g.fillText('ИСКРА-2',0,2);g.restore()}
+ else if(stage===3){g.fillStyle='#c9cdd8';g.fillRect(-14,-74,28,4)}
+ g.restore()}
+function drawPad(g,X,Y){const st=S.rocket||0,x=X+8,y=Y+14;px(g,'rgba(0,0,0,.25)',x-30,y-2,60,6);
+ if(st>=1){px(g,'#7a7a84',x-28,y-6,56,8);px(g,'#9a9aa6',x-28,y-6,56,2);px(g,'#5a5662',x+22,y-118,4,112);for(let i=0;i<8;i++)px(g,'#5a5662',x+16,y-110+i*14,10,2);px(g,'#ffd978',x+23,y-122,2,4)}
+ else{px(g,'#8a5a2b',x-24,y-4,48,4);for(let i=-20;i<=20;i+=10)px(g,'#6b4423',x+i,y-10,2,8)}
+ if(st>=2)drawRocket(g,x,y-6,1,st,false);
+ if(S.rocketJob){const p=S.rocketJob.p/S.rocketJob.need;px(g,'#10141c',x-20,y+6,40,5);px(g,'#ffd978',x-19,y+7,Math.round(38*p),3)}}
+XOBJ.rocket=(g,o,X,Y)=>{if(moon)return;drawPad(g,X,Y)};
+PROMPT.rocket=()=>'E — ракета';XPROMPT.rocket=1;PROMPT.fradio=()=>S.flags.warWon?'E — радар Корвина':'';
+const XPANEL_rocket=function(){let h=`<button class="close" data-a="close">✕</button><h2>🚀 Ракета «Искра-2»</h2><p class="muted">Всего ${rocketTotal().toLocaleString('ru')} ресурсов. Строит дед Тарас, носильщики подносят материалы. Ресурсы берутся со склада — назначь побольше работников!</p>`;
+ RSTAGES.forEach((st,i)=>{const done=(S.rocket||0)>i,cs=(S.rocket||0)===i;h+=`<div class="row"><div><b class="${done?'ok':''}">${done?'✔ ':''}${i+1}. ${st.n}</b><br><span class="muted">${st.d}</span><br><span class="fx">🧪 ${st.f[0]}</span>${cs?'<br>'+costTxt(st.cost):''}</div>${cs?(S.rocketJob?`<span class="ok">🔨 ${Math.round(100*S.rocketJob.p/S.rocketJob.need)}%</span>`:`<button data-a="rstage" ${can(st.cost)?'':'disabled'}>Заказать Тарасу</button>`):''}</div>`});
+ if((S.rocket||0)>=4){const c=S.rcrew=(S.rcrew||[]).filter(id=>villagers().some(v=>v.id===id));h+='<h2 style="margin-top:10px">👨‍🚀 Экипаж: 5 сильных людей</h2><div>';
+  for(const v of villagers().filter(v=>v.id!=='tihon')){const ab=ABIL[abilOf(v.id)];h+=`<button class="crew ${c.includes(v.id)?'on':''}" data-a="rcrew" data-c="${v.id}">${c.includes(v.id)?'✔ ':''}${v.name}<br><small>${ab?ab.n:''}</small></button>`}
+  h+=`</div><p class="muted">Выбрано: ${c.length}/5</p><button data-a="launch" ${c.length===5?'':'disabled'}>🚀 Старт к Луне!</button>`}
+ $('panel').innerHTML=h};
+const XPANEL_war=function(){$('panel').innerHTML=`<button class="close" data-a="close">✕</button><h2>⚔ Штурм крепости</h2><div class="big">Бой с Яром на <b>сложном</b> уровне.<br>✔ Победа — крепость наша.<br>✖ Поражение — <b class="no">теряешь ВСЕ ресурсы</b> (в сумке и на складе).</div><p class="muted">Щиты снижают урон, дым замедляет врага. A/D — шаг, J — удар, K — нога, L — блок, U — уклон.</p><button data-a="war">⚔ В бой!</button>`};
+const XPANEL_moonradar=function(){$('panel').innerHTML=`<button class="close" data-a="close">✕</button><h2>📡 Радар Корвина</h2><canvas id="mrad" width="300" height="200" style="display:block;margin:6px auto;background:#05060c;border-radius:8px"></canvas><div class="big">Сигнал идёт <b>с Луны</b>! До неё 384 400 км.<br>Туда не доплыть — нужна <b>ракета</b>.</div><p class="fx">🧪 Расстояние: d = c · t / 2 — радар меряет время эха</p>`;
+ const g=$('mrad').getContext('2d');let k=0;const draw=()=>{if(panelOpen!=='moonradar')return;k++;g.fillStyle='#05060c';g.fillRect(0,0,300,200);g.strokeStyle='#1f6a4a';for(let r=30;r<200;r+=40){g.beginPath();g.arc(60,170,r,0,6.283);g.stroke()}
+  g.fillStyle='#2f6fb0';g.beginPath();g.arc(60,170,14,0,6.283);g.fill();g.fillStyle='#c9c9d2';g.beginPath();g.arc(240,50,22,0,6.283);g.fill();g.fillStyle='#9a9aa6';g.beginPath();g.arc(232,44,5,0,6.283);g.arc(248,58,4,0,6.283);g.fill();
+  const a=(k%60)/60;g.strokeStyle=`rgba(111,224,176,${1-a})`;g.beginPath();g.arc(240,50,6+a*30,0,6.283);g.stroke();g.fillStyle=k%20<10?'#ff4aff':'#fff';g.fillRect(238,48,4,4);
+  g.setLineDash([4,4]);g.strokeStyle='#6fe0b0';g.beginPath();g.moveTo(60,170);g.lineTo(240,50);g.stroke();g.setLineDash([]);requestAnimationFrame(draw)};draw()};
+XPANEL.rocket=()=>XPANEL_rocket();XPANEL.war=()=>XPANEL_war();XPANEL.moonradar=()=>XPANEL_moonradar();
+$('panel').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;const a=b.dataset.a;
+ if(a==='war')startWar();
+ if(a==='rstage'&&!S.rocketJob){const st=RSTAGES[S.rocket||0];pay(st.cost);S.rocketJob={i:S.rocket||0,p:0,need:[40,50,60][S.diff!=null?S.diff:1]};showSci(st.f);sfx('build');closePanel();say([['Рен',`Дед Тарас! Ракета, этап «${st.n}».`],['Дед Тарас','На Луну, говоришь? Ну, корабль я уже строил. Носильщики — за мной!']])}
+ if(a==='rcrew'){const id=b.dataset.c,c=S.rcrew||(S.rcrew=[]),k=c.indexOf(id);if(k>=0)c.splice(k,1);else if(c.length<5)c.push(id);else toast('В кабине только 5 мест');sfx('ui');renderPanel()}
+ if(a==='launch'&&(S.rcrew||[]).length===5)startLaunch()});
+function xInteract10(pk){if(!pk)return false;const o=pk.o;
+ if(o.t==='fgate'&&S.q>=26&&!S.flags.warWon){if(!prepDone()){toast('Сначала выполни список «Арсенала» (R)');return true}openPanel('war');return true}
+ if(o.t==='fradio'&&S.flags.warWon){S.flags.moonSig=1;sfx('radio');checkQuests();save();openPanel('moonradar');return true}
+ if(o.t==='rocket'){openPanel('rocket');return true}
+ return false}
+function tick10(){const v=maps.village;if(S.flags.moonSig&&v.o[RKY*v.w+RKX]?.t!=='rocket'){for(let y=RKY-3;y<=RKY+1;y++)for(let x=RKX-3;x<=RKX+2;x++){const i=y*v.w+x;if(v.o[i]&&v.g[i]!==WA)v.o[i]=null}v.o[RKY*v.w+RKX]={t:'rocket'}}}
 
 const sv=loadSave();if(sv)$('bCont').style.display='';
 $('bCont').onclick=()=>start(loadSave()||sv,false);
