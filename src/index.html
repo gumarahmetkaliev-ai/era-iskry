@@ -862,6 +862,7 @@ function render(){if(F)return renderFight();if(moon)return renderMoon();const m=
  px(ctx,m.dark?'#0b0a10':m.name==='lab'?'#1c120b':m.name==='village'?'#2f7fc4':'#1f4d26',0,0,VW,VH);ctx.drawImage(m.bg,-cx,-cy);
  const x0=Math.max(0,(cx/T|0)-3),x1=Math.min(m.w-1,((cx+VW)/T|0)+1),y0=Math.max(0,(cy/T|0)-1),y1=Math.min(m.h-1,((cy+VH)/T|0)+3);
  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(m.g[y*m.w+x]===WA){const X=x*T-cx,Y=y*T-cy;px(ctx,'#6fb4ea',X+((time/190+x*5+y*3)|0)%12,Y+4,4,1);px(ctx,'#9fd3ff',X+((time/260+x*7+y)|0)%13,Y+11,3,1)}
+ drawPortals(m,cx,cy);
  const rows={};const chars=m.npcs.concat(m.foes||[]).concat(B&&m.name==='newland'?B.units.filter(u=>!u.dead):[]).concat(cut&&cut.t<7||fly?[]:[{pal:P.pal,dir:S.dir,moving:P.moving,work:P.work,cheer:P.cheer,seed:0,x:PX,y:PY}]);
  for(const c of chars){const r=Math.floor((c.y-1)/T);(rows[r]=rows[r]||[]).push(c)}
  for(let y=y0;y<=y1;y++){for(let x=x0;x<=x1;x++){const o=m.o[y*m.w+x];if(o)drawObj(o,x*T-cx,y*T-cy,x)}
@@ -1406,7 +1407,7 @@ function caveDeco(m,cx,cy,x0,x1,y0,y1){MUSH.length=0;const g=ctx,W=m.w;
    else if(h<.075){MUSH.push([X+8,Y+9]);px(g,'#cfe',X+7,Y+9,1,4);px(g,'#3fc0a0',X+5,Y+7,5,2);px(g,'#9ff0e0',X+6,Y+7,2,1);px(g,'#cfe',X+11,Y+11,1,2);px(g,'#3fc0a0',X+10,Y+10,3,1)}
    else if(h<.085){px(g,'#5a5266',X+6,Y+5,4,9);px(g,'#6a6276',X+7,Y+2,2,4);px(g,'#4a4356',X+5,Y+13,6,2)}
    else if(h>.985){px(g,'#8a5a2b',X+2,Y+7,12,1);px(g,'#8a5a2b',X+2,Y+11,12,1);for(let i=3;i<14;i+=4)px(g,'#6b4423',X+i,Y+6,2,7)}}}}
-function afterRender(m,cx,cy){const g=ctx;if(m.portals&&!B)for(const p of m.portals){const px0=(p.x0+p.x1+1)*T/2-cx,py0=(p.y0+p.y1+1)*T/2-cy,on=px0>-8&&px0<VW+8&&py0>-8&&py0<VH+8;if(on){const a=.35+.25*Math.sin(time/180);g.fillStyle=`rgba(255,217,120,${a})`;g.fillRect(Math.round(p.x0*T-cx),Math.round(p.y0*T-cy),(p.x1-p.x0+1)*T,(p.y1-p.y0+1)*T);g.strokeStyle='#ffd978';g.lineWidth=1;g.strokeRect(Math.round(p.x0*T-cx)+.5,Math.round(p.y0*T-cy)+.5,(p.x1-p.x0+1)*T-1,(p.y1-p.y0+1)*T-1)}const ar=py0>VH?'⬇':py0<0?'⬆':px0<0?'⬅':px0>VW?'➡':'⇨',n=ar+' '+(p.ret?'Выход':(NAMES[p.to]||'')),w=Math.round(n.length*4.2+10),xx=Math.round(Math.max(w/2+4,Math.min(VW-w/2-4,px0))),y=Math.round(Math.max(48,Math.min(VH-14,py0-10))+Math.sin(time/200)*2);px(g,'#1d2433',xx-w/2,y-9,w,13);px(g,'#ffd978',xx-w/2,y-9,w,1);px(g,'#ffd978',xx-w/2,y+3,w,1);px(g,'#ffd978',xx-w/2,y-9,1,13);px(g,'#ffd978',xx+w/2-1,y-9,1,13);g.font='bold 7px monospace';g.textAlign='center';g.fillStyle='#ffd978';g.fillText(n,xx,y+1)}if(B&&m.name==='newland')drawBattle(cx,cy);
+function afterRender(m,cx,cy){const g=ctx;if(m.portals&&!B)for(const p of m.portals){const px0=(p.x0+p.x1+1)*T/2-cx,py0=(p.y0+p.y1+1)*T/2-cy,on=px0>-8&&px0<VW+8&&py0>-8&&py0<VH+8;if(on)continue;const ar=py0>VH?'⬇':py0<0?'⬆':px0<0?'⬅':px0>VW?'➡':'⇨',n=ar+' '+(p.ret?'Выход':(NAMES[p.to]||'')),w=Math.round(n.length*4.2+10),xx=Math.round(Math.max(w/2+4,Math.min(VW-w/2-4,px0))),y=Math.round(Math.max(48,Math.min(VH-14,py0-10))+Math.sin(time/200)*2);px(g,'#1d2433',xx-w/2,y-9,w,13);px(g,'#ffd978',xx-w/2,y-9,w,1);px(g,'#ffd978',xx-w/2,y+3,w,1);px(g,'#ffd978',xx-w/2,y-9,1,13);px(g,'#ffd978',xx+w/2-1,y-9,1,13);g.font='bold 7px monospace';g.textAlign='center';g.fillStyle='#ffd978';g.fillText(n,xx,y+1)}if(B&&m.name==='newland')drawBattle(cx,cy);
  if(m.name==='cave'){for(const q of MUSH){const a=.5+.5*Math.sin(time/500+q[0]);g.globalAlpha=.6+.4*a;px(g,'#5fffd0',q[0]-3,q[1]-2,5,2);px(g,'#9ff0e0',q[0]+2,q[1]+1,3,1);g.globalAlpha=1}
   for(let i=0;i<4;i++){const bx=S.x-cx+Math.sin(time/700+i*2.3)*90,by=S.y-cy-60+Math.cos(time/530+i*1.7)*34,f=Math.floor(time/80+i)%2;px(g,'#2a2230',bx-1,by,3,2);px(g,'#2a2230',bx-(f?5:4),by-(f?2:0),4,1);px(g,'#2a2230',bx+2,by-(f?2:0),4,1);px(g,'#ff4a3a',bx,by,1,1)}}
  if(m.name==='newland'&&m.foes){g.font='bold 6px monospace';g.textAlign='center';for(const f of m.foes){const X=Math.round(f.x-cx),Y=Math.round(f.y-cy);if(X<-40||X>VW+40)continue;const w=f.name.length*3.6+4;px(g,'rgba(80,10,10,.8)',X-w/2,Y-36,w,8);g.fillStyle='#ffd0c0';g.fillText(f.name,X,Y-30);
@@ -1582,6 +1583,22 @@ $('panel').addEventListener('click',e=>{const b=e.target.closest('button');if(!b
 /* фоновая музыка */
 let musI=0;const MEL=[57,60,64,60,53,57,60,57,48,52,55,52,55,59,62,59];
 setInterval(()=>{if(!SND||!started||!AC||AC.state!=='running'||document.hidden)return;try{const m=MEL[musI++%MEL.length];tone(440*Math.pow(2,(m-69)/12),.5,'triangle',.022);if(musI%4===1)tone(440*Math.pow(2,(m-81)/12),1.15,'sine',.03)}catch(e){}},300);
+
+function drawPortals(m,cx,cy){if(!m.portals||m.sea)return;const g=ctx;
+ for(const p of m.portals){const X0=p.x0*T-cx,Y0=p.y0*T-cy,W=(p.x1-p.x0+1)*T,H=(p.y1-p.y0+1)*T;if(X0>VW+60||X0+W<-60||Y0>VH+60||Y0+H<-60)continue;
+  const horiz=W>=H,cxp=X0+W/2,cyp=Y0+H/2,ph=time/160;
+  /* светящийся портал */
+  for(let r=0;r<4;r++){const a=.18+.1*Math.sin(ph+r);g.fillStyle=r%2?`rgba(160,90,255,${a})`:`rgba(255,217,120,${a})`;g.beginPath();g.ellipse(Math.round(cxp),Math.round(cyp),Math.max(6,W/2-r*3),Math.max(6,H/2-r*3),0,0,6.283);g.fill()}
+  for(let i=0;i<8;i++){const an=ph*.7+i*.785,rx=(W/2-4)*(.5+.4*Math.sin(ph+i)),ry=(H/2-4)*(.5+.4*Math.cos(ph+i));px(g,i%2?'#fff2a8':'#c9a0ff',Math.round(cxp+Math.cos(an)*rx),Math.round(cyp+Math.sin(an)*ry),2,2)}
+  /* каменные столбы */
+  const pil=(x,y)=>{x=Math.round(x);y=Math.round(y);px(g,'rgba(0,0,0,.25)',x-1,y+14,10,3);px(g,'#6a6672',x,y-8,8,24);px(g,'#8a8694',x,y-8,8,2);px(g,'#4e4a56',x+6,y-6,2,22);px(g,'#ffd978',x+3,y-4,2,2)};
+  if(horiz){pil(X0-8,Y0);pil(X0+W,Y0)}else{pil(X0,Y0-14);pil(X0,Y0+H-2)}
+  /* вывеска */
+  const name=p.ret?'Выход':(NAMES[p.to]||''),dir=p.y0>m.h-4?-1:p.y0<3?1:0,dirx=p.x0<3?1:p.x0>m.w-4?-1:0;
+  let sx=cxp,sy=cyp;if(dir===-1)sy=Y0-26;else if(dir===1)sy=Y0+H+22;else if(dirx===1)sx=X0+W+40;else if(dirx===-1)sx=X0-40;else sy=Y0-26;
+  g.font='bold 7px monospace';const tw=Math.round(g.measureText(name).width)+10;sx=Math.round(sx);sy=Math.round(sy);
+  px(g,'rgba(0,0,0,.25)',sx-2,sy+18,6,2);px(g,'#5a3a1c',sx-1,sy,3,19);px(g,'#3a2616',sx-tw/2-1,sy-11,tw+2,13);px(g,'#b5813e',sx-tw/2,sy-10,tw,11);px(g,'#d9a35a',sx-tw/2,sy-10,tw,1);px(g,'#8a5a2b',sx-tw/2,sy,tw,1);
+  g.textAlign='center';g.fillStyle='#2a1a0c';g.fillText(name,sx,sy-2)}}
 const sv=loadSave();if(sv)$('bCont').style.display='';
 $('bCont').onclick=()=>start(loadSave()||sv,false);
 function showTitle(reset){started=false;F=null;cut=null;document.body.className='';closePanel();$('title').style.display='flex';$('bNew').style.display=reset?'none':'';$('bCont').style.display='none';$('diffBox').style.display=reset?'flex':'none'}
