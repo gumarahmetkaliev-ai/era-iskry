@@ -3,7 +3,7 @@
 **Gambit Hackathon 2026 · трек «AUTOMATE IT!»**
 
 ▶ **Играть в браузере:** https://gumarahmetkaliev-ai.github.io/era-iskry/
-🎬 **Видео-демо (2:44, субтитры и музыка):** [docs/video.mp4](docs/video.mp4)
+🎬 **Видео-демо (2:46, субтитры и музыка):** [docs/video.mp4](docs/video.mp4)
 📊 **Презентация:** [docs/presentation.pdf](docs/presentation.pdf)
 
 ![Деревня](docs/screenshots/04_village.png)
