@@ -1579,6 +1579,9 @@ const _decoPanel=decoPanel;decoPanel=function(){_decoPanel();if(panelOpen!=='cra
   const x=document.createElement('button');x.dataset.a='craftn';x.dataset.i=i;x.dataset.n='max';x.textContent='Макс ('+mx+')';x.disabled=mx<1;x.style.padding='5px 7px';w.appendChild(x)})};
 $('panel').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled||b.dataset.a!=='craftn')return;const r=RECIPES[+b.dataset.i],n=b.dataset.n==='max'?craftMax(r):+b.dataset.n,got=craftN(r,n);
  if(got){toast(`Создано: ${ITEMS[r.id]} ×${got}`);showSci(FORM[r.id]);sfx('craft');P.cheer=1;checkQuests();save();renderPanel()}});
+/* фоновая музыка */
+let musI=0;const MEL=[57,60,64,60,53,57,60,57,48,52,55,52,55,59,62,59];
+setInterval(()=>{if(!SND||!started||!AC||AC.state!=='running'||document.hidden)return;try{const m=MEL[musI++%MEL.length];tone(440*Math.pow(2,(m-69)/12),.5,'triangle',.022);if(musI%4===1)tone(440*Math.pow(2,(m-81)/12),1.15,'sine',.03)}catch(e){}},300);
 const sv=loadSave();if(sv)$('bCont').style.display='';
 $('bCont').onclick=()=>start(loadSave()||sv,false);
 function showTitle(reset){started=false;F=null;cut=null;document.body.className='';closePanel();$('title').style.display='flex';$('bNew').style.display=reset?'none':'';$('bCont').style.display='none';$('diffBox').style.display=reset?'flex':'none'}
