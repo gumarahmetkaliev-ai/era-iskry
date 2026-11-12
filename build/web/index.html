@@ -531,7 +531,7 @@ function tryBuild(b){const d=DIRV[S.dir],m=cur;let tx,ty;
  if(boxHits(S.x,S.y,tx,ty)){toast('Отойди на шаг — постройка встанет прямо на тебя');return false}
  if(m.npcs.some(n=>boxHits(n.x,n.y,tx,ty)||(n.path[0]===ty*m.w+tx))){toast('Здесь стоит житель — подожди, пока отойдёт');return false}
  const i=ty*m.w+tx;
- if(tx<1||ty<1||tx>=m.w-1||ty>=m.h-1||solid(m,tx,ty)||m.o[i]||![G,DI,FL].includes(m.g[i])){toast('Здесь строить нельзя — встань лицом к свободной клетке');return false}
+ if(tx<1||ty<1||tx>=m.w-1||ty>=m.h-1||solid(m,tx,ty)||m.o[i]||![G,DI,FL,GV,SA].includes(m.g[i])){toast('Здесь строить нельзя — встань лицом к свободной клетке');return false}
  if(b.id!=='campfire'&&has('taras')){if(!S.flags.duelWon){toast('Строит только дед Тарас, а он живёт в деревне. Сначала пройди Брока');return false}pay(b.cost);const need=BTIME[b.id]||12;m.o[i]={t:'site',b:b.id,prog:0,need};S.sites.push({m:S.map,x:tx,y:ty,t:b.id,prog:0,need});sfx('build');toast('📐 Заказ для Тараса: '+b.n+'. Он скоро придёт!');save();return true}
  pay(b.cost);m.o[i]={t:b.id};S.built.push({m:S.map,x:tx,y:ty,t:b.id});S.flags[b.id]=1;toast('Построено: '+b.n);P.cheer=1;checkQuests();save();return true}
 
@@ -1097,8 +1097,8 @@ const ATK={p:{dur:.26,hit:.09,rng:58,dmg:6},k:{dur:.46,hit:.21,rng:66,dmg:10}};
 const EATK={p:{w:.34,dur:.62,rng:60,dmg:12,hits:1},k:{w:.56,dur:.92,rng:70,dmg:20,hits:1},c:{w:.3,dur:1.25,rng:62,dmg:9,hits:3,gap:.27}};
 function fdiff(){if(F&&F.war)return warStats();return[{hp:150,dmg:.5,sp:.78,c:.35},{hp:200,dmg:.75,sp:.88,c:.6},{hp:290,dmg:1.1,sp:1.02,c:.9}][S.diff!=null?S.diff:1]}
 function startFight(){closePanel();const d=fdiff();F={px:VW*.3,ex:VW*.7,php:100,ehp:d.hp,emax:d.hp,pa:null,pt:0,ea:null,ecd:1.2,phit:0,ehit:0,eblock:0,pblock:false,intro:2.2,over:0,win:false,pm:false,em:false,dodge:0,dcd:0,inv:0,stun:0,fl:'',flT:0};for(const k in fk)fk[k]=0;document.body.classList.add('fight');$('bub').style.display='none';$('fmsg').textContent='РАУНД 1';$('fnames').lastElementChild.textContent='БРОК';$('fmsg').style.display='block'}
-function fAtk(a){if(F&&F.intro<=0&&F.over<=0&&!F.pa&&F.phit<=0&&F.dodge<=0){F.pa=a;F.pt=0;F.pdone=false}}
-function fDodge(){if(F&&F.intro<=0&&F.over<=0&&F.dcd<=0&&!F.pa&&F.phit<=0){F.dodge=.18;F.inv=.2;F.dcd=1.3}}
+function fAtk(a){if(F&&F.intro<=0&&F.over<=0&&!F.pa&&F.phit<=.1&&F.dodge<=0){F.pa=a;F.pt=0;F.pdone=false}}
+function fDodge(){if(F&&F.intro<=0&&F.over<=0&&F.dcd<=0&&!F.pa){F.dodge=.18;F.inv=.2;F.dcd=1.3}}
 function fFlash(t){F.fl=t;F.flT=.7}
 function endFight(){if(F.war){const w=F.win;F=null;document.body.classList.remove('fight');$('fmsg').style.display='none';return warEnd(w)}const w=F.win;F=null;document.body.classList.remove('fight');$('fmsg').style.display='none';const b=villagers().find(n=>n.id==='bork');
  if(w){const first=!S.flags.duelWon;S.flags.duelWon=1;if(S.diff===2)S.flags.duelHard=1;if(b){b.hired=true;b.still=false;if(first){const[x,y]=freeSpot(maps.village,16,15);moveNpc(b,'village',x,y)}}
@@ -1113,7 +1113,7 @@ function updFight(dt){const f=F,d=fdiff();
  if(f.dodge>0){f.dodge-=dt;f.px-=140*dt}
  else if(f.pa){f.pt+=dt;const A=ATK[f.pa];if(!f.pdone&&f.pt>=A.hit){f.pdone=true;if(f.ex-f.px<A.rng){if(f.eblock>0){f.ehp-=A.dmg*.15;sfx('block');fFlash('БЛОК')}else{f.ehp-=A.dmg;f.ehit=.16;sfx('punch');f.ex+=4;if(!f.ea&&Math.random()<(f.ehp<f.emax*.35?.45:.28)*d.c){f.eblock=.35;f.ecd=0;f.ea={type:Math.random()<.5?'c':'p',t:-.35,done:0}}
    if(f.ea&&f.ea.t<EATK[f.ea.type].w*.6&&f.ehp>f.emax*.35&&Math.random()<.5){f.ea=null;f.stun=.45;f.ecd=.5;fFlash('СБИЛ!')}}}}if(f.pt>=A.dur)f.pa=null}
- else if(!f.pblock&&f.phit<=0){if(L){f.px-=80*dt;f.pm=true}if(R){f.px+=80*dt;f.pm=true}}
+ else if(!f.pblock){if(L){f.px-=115*dt;f.pm=true}if(R){f.px+=115*dt;f.pm=true}}
  const rage=f.ehp<f.emax*.35,spd=d.sp*(rage?1.3:1);f.em=false;f.eblock=Math.max(0,f.eblock-dt);
  if(f.stun>0){}
  else if(f.ea){const a=f.ea,A=EATK[a.type];a.t+=dt*spd;
@@ -1599,6 +1599,7 @@ function drawPortals(m,cx,cy){if(!m.portals||m.sea)return;const g=ctx;
   g.font='bold 7px monospace';const tw=Math.round(g.measureText(name).width)+10;sx=Math.round(sx);sy=Math.round(sy);
   px(g,'rgba(0,0,0,.25)',sx-2,sy+18,6,2);px(g,'#5a3a1c',sx-1,sy,3,19);px(g,'#3a2616',sx-tw/2-1,sy-11,tw+2,13);px(g,'#b5813e',sx-tw/2,sy-10,tw,11);px(g,'#d9a35a',sx-tw/2,sy-10,tw,1);px(g,'#8a5a2b',sx-tw/2,sy,tw,1);
   g.textAlign='center';g.fillStyle='#2a1a0c';g.fillText(name,sx,sy-2)}}
+{const _tb=tryBuild;tryBuild=function(b){const d0=S.dir;for(const d of[d0,0,2,1,3]){S.dir=d;if(_tb(b)){toastT=2.4;return true}}S.dir=d0;return false}}
 const sv=loadSave();if(sv)$('bCont').style.display='';
 $('bCont').onclick=()=>start(loadSave()||sv,false);
 function showTitle(reset){started=false;F=null;cut=null;document.body.className='';closePanel();$('title').style.display='flex';$('bNew').style.display=reset?'none':'';$('bCont').style.display='none';$('diffBox').style.display=reset?'flex':'none'}
