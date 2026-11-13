@@ -4,6 +4,7 @@
 
 ▶ **Играть в браузере:** https://gumarahmetkaliev-ai.github.io/era-iskry/
 🎬 **Видео-демо (2:46, субтитры и музыка):** [docs/video.mp4](docs/video.mp4)
+🎞 **Короткое видео для защиты (1:53, Full HD):** [docs/video_demo.mp4](docs/video_demo.mp4)  
 📊 **Презентация:** [docs/presentation.pdf](docs/presentation.pdf)
 
 ![Деревня](docs/screenshots/04_village.png)
