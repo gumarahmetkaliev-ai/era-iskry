@@ -1416,7 +1416,7 @@ function afterRender(m,cx,cy){const g=ctx;if(m.portals&&!B)for(const p of m.port
  if(fly&&m.name==='newland')drawBalloon(g,S.x-cx,S.y-cy-70,fly.c);
  if(!F&&!cut){miniT-=1/30;drawMini(m)}}
 /* ---------- каждый кадр ---------- */
-function tick8(dt){tick10();updBattle(dt);if(panelOpen&&banT>0)banT=.01;if(banT>0){banT-=dt;if(banT<=0)$('qban').style.display='none'}if(sciT>0){sciT-=dt;if(sciT<=0)$('sci').style.display='none'}
+function tick8(dt){tick10();tickPrio(dt);updBattle(dt);if(panelOpen&&banT>0)banT=.01;if(banT>0){banT-=dt;if(banT<=0)$('qban').style.display='none'}if(sciT>0){sciT-=dt;if(sciT<=0)$('sci').style.display='none'}
  stepT-=dt;if(P.moving&&stepT<=0){stepT=RUN()?.22:.34;sfx('step')}
  if(S.research.balloon&&!S.balJob&&!S.flags.balloon){S.balJob={p:0,need:[22,32,42][S.diff!=null?S.diff:1]};const m=maps.newland;m.o[10*m.w+24]={t:'bsite'};
   say([['Рен','Чертёж шара готов! Ткань из волокна, горелка на угле.'],['Рен','Дед Тарас приплывёт и сошьёт шар прямо у лагеря. Носильщики помогут.']])}
@@ -1621,6 +1621,26 @@ drawBalloon=function(g,x,y,crew){x=Math.round(x);y=Math.round(y);const R=(a,b,w,
  if(crew){const f=Math.floor(time/90)%3;R(-2,22+f%2,4,6,'#e8542e');R(-1,24+f%2,2,4,'#ffb13b');R(-1,26,1,2,'#fff1a8');
   const pals=[P.pal].concat(crew.map(id=>{const v=villagers().find(v=>v.id===id);return v?v.pal:null}).filter(Boolean));pals.forEach((p,i)=>{const hx=-9+i*5;R(hx,28,4,4,p.skin);R(hx,27,4,2,p.hair)})}
  R(-10,32,20,10,'#6b4423');R(-10,32,20,2,'#8a5a2b');R(-10,36,20,1,'#4a2e18');R(-10,40,20,2,'#4a2e18');for(let i=-8;i<10;i+=4)R(i,33,1,8,'#5a3a1c')};
+/* ---- приоритеты склада ---- */
+const GATH=['wood','stone','fiber','ore','coal'],PRN={wood:'Дерево',stone:'Камень',fiber:'Волокно',ore:'Руда',coal:'Уголь'};
+function gatherers(){return villagers().filter(n=>GATH.includes(n.job))}
+function totalOf(k){return(S.inv[k]||0)+(S.storage[k]||0)}
+function prioNeed(){let c=null;if(S.flags.moonSig&&(S.rocket||0)<4&&!S.rocketJob)c=RSTAGES[S.rocket||0].cost;else if(S.research.ship&&S.ship<5&&!S.shipJob)c=sc(STAGES[S.ship].cost);else if(S.q<13)c={wood:20,stone:20,fiber:10,ore:6,coal:6};
+ if(!c)return null;const need={};for(const k in c){if(k==='_fix')continue;const d=c[k]-totalOf(k);if(d<=0)continue;if(k==='ingot'){need.ore=(need.ore||0)+d*2;need.coal=(need.coal||0)+d}else if(GATH.includes(k))need[k]=(need[k]||0)+d}
+ for(const k of['ore','coal'])if(need[k])need[k]=Math.max(0,need[k]-totalOf(k));
+ let best=null,bd=0;for(const k in need)if(need[k]>bd){bd=need[k];best=k}return best}
+function applyPrio(k){S.base=S.base||{};for(const n of gatherers()){if(!S.base[n.id])S.base[n.id]=n.job;const j=k||S.base[n.id];if(MINEJ[j]&&!S.inv.pick)continue;if(n.job!==j){n.job=j;n.st='seek';n.path=[];n.work=false;n.carry=0;n.msg='';relocate(n)}}
+ if(!k){for(const n of villagers())if(S.base[n.id]&&GATH.includes(S.base[n.id])&&GATH.includes(n.job)&&n.job!==S.base[n.id]){n.job=S.base[n.id];n.st='seek';n.path=[];n.carry=0;relocate(n)}S.base={}}
+ S.prioCur=k||null}
+let prioT=0;
+function tickPrio(dt){if(S.prio!=='auto')return;prioT-=dt;if(prioT>0)return;prioT=4;const k=prioNeed();if(k!==(S.prioCur||null)){applyPrio(k);if(k)toast('📦 Авто-приоритет: все добытчики идут за ресурсом «'+PRN[k]+'»')}}
+{const _d=decoPanel;decoPanel=function(){_d();if(panelOpen!=='storage')return;const n=gatherers().length,cur=S.prio||'off';let h='<h2 style="margin-top:12px">📦 Приоритет добычи</h2><p class="muted">Скажи системе, чего не хватает — все добытчики ('+n+') переключатся сами. «Авто» само выбирает то, чего меньше всего для текущей стройки.</p><div>';
+  for(const[k,t]of[['off','Как назначено'],['auto','🤖 Авто'],['wood','Дерево'],['stone','Камень'],['fiber','Волокно'],['ore','Руда'],['coal','Уголь']])h+=`<button class="crew ${cur===k?'on':''}" data-a="prio" data-k="${k}">${t}</button>`;
+  h+='</div>'+(S.prioCur?`<p class="ok">Сейчас все добывают: ${PRN[S.prioCur]}</p>`:'');$('panel').insertAdjacentHTML('beforeend',h)}}
+$('panel').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.dataset.a!=='prio')return;const k=b.dataset.k;
+ if(MINEJ[k]&&!S.inv.pick){toast('Для шахты сначала нужна кирка');return}
+ S.prio=k==='off'?null:k;if(k==='off')applyPrio(null);else if(k==='auto'){prioT=0;tickPrio(0);if(!S.prioCur)toast('🤖 Авто: сейчас всего хватает — работают как назначено')}else{applyPrio(k);toast('📦 Приоритет: '+PRN[k]+' — добытчики переключились')}
+ sfx('ui');save();renderPanel()});
 const sv=loadSave();if(sv)$('bCont').style.display='';
 $('bCont').onclick=()=>start(loadSave()||sv,false);
 function showTitle(reset){started=false;F=null;cut=null;document.body.className='';closePanel();$('title').style.display='flex';$('bNew').style.display=reset?'none':'';$('bCont').style.display='none';$('diffBox').style.display=reset?'flex':'none'}
