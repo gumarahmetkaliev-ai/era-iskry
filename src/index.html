@@ -1616,8 +1616,11 @@ function demoState(){const s=newState(0);Object.assign(s,{q:3,
   flags:{campfire:1,metElder:1,t3:1,t11:1,t17:1,done2:1,furnace:1,demo:1,found:1,fortSeen:1,balloon:1},
   built:[{t:'furnace',m:'village',x:13,y:16}],revived:{},found:{}});
  for(const id of STONE)if(has(id)){s.found[id]=1;if(id!=='maris')s.revived[id]=1}return s}
-function runDemo(){closePanel();dq.length=0;moon=null;B=null;F=null;document.body.classList.remove('fight','cut');start(demoState(),false);tick10();checkQuests();save();
- toast('🎬 Демо: иди на юг в деревню — у моста Брок')}
+function runDemo(){closePanel();dq.length=0;moon=null;B=null;F=null;document.body.classList.remove('fight','cut');start(demoState(),true);tick10();checkQuests();save()}
+/* в демо диалоги не показываются (кроме финала на Луне), баннер задания скрыт */
+{const _say=say;say=function(lines,cb){if(S&&S.flags&&S.flags.demo&&!moon){if(panelOpen&&cb)closePanel();if(cb)setTimeout(cb,0);return}return _say(lines,cb)};
+ const _st=start;start=function(a,b){_st(a,b);document.body.classList.toggle('demo',!!S.flags.demo)};
+ const st=document.createElement('style');st.textContent='body.demo #qban{display:none!important}';document.head.appendChild(st)}
 function restartDemo(){try{sessionStorage.setItem('era-demo','1');location.reload();return}catch(e){}runDemo()}
 $('bDemo').onclick=runDemo;$('bDemo').textContent='🎬 Демо для жюри — весь путь до Луны';
 try{if(sessionStorage.getItem('era-demo')){sessionStorage.removeItem('era-demo');setTimeout(runDemo,60)}}catch(e){}
