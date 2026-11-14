@@ -102,6 +102,7 @@ body.cut #sci,body.cut #achT,body.fight #mini,body.cut #mini,body.fight #run,bod
 <p>Движение: WASD / стрелки / джойстик. Действие: E / пробел / кнопка.<br>I — инвентарь, C — крафт, B — стройка, Q — задания.<br>M — карта мира, P — пауза и меню, Shift — бег.</p>
 <button id="bCont" style="display:none">Продолжить</button>
 <button id="bNew">Новая игра</button>
+<button id="bDemo" style="background:#3f8f55">🎬 Демо для жюри — готовая деревня</button>
 <div id="diffBox"><p><b>Выбери сложность</b></p>
 <button data-d="0">🌱 Лёгкая<br><small>Больше добычи, дешёвые постройки, Брок слабее</small></button>
 <button data-d="1">⚗ Нормальная<br><small>Как задумано</small></button>
@@ -1600,6 +1601,14 @@ function drawPortals(m,cx,cy){if(!m.portals||m.sea)return;const g=ctx;
   px(g,'rgba(0,0,0,.25)',sx-2,sy+18,6,2);px(g,'#5a3a1c',sx-1,sy,3,19);px(g,'#3a2616',sx-tw/2-1,sy-11,tw+2,13);px(g,'#b5813e',sx-tw/2,sy-10,tw,11);px(g,'#d9a35a',sx-tw/2,sy-10,tw,1);px(g,'#8a5a2b',sx-tw/2,sy,tw,1);
   g.textAlign='center';g.fillStyle='#2a1a0c';g.fillText(name,sx,sy-2)}}
 {const _tb=tryBuild;tryBuild=function(b){const d0=S.dir;for(const d of[d0,0,2,1,3]){S.dir=d;if(_tb(b)){toastT=2.4;return true}}S.dir=d0;return false}}
+/* ---- демо для жюри: готовая деревня ---- */
+function demoState(){const s=newState(0);Object.assign(s,{map:'village',x:20*T+8,y:15*T+12,dir:0,q:8,
+  inv:{axe:1,pick:1,torch:1,berry:40,wood:30,stone:20,fiber:12},storage:{wood:40,stone:30,fiber:20,ore:12,coal:12,ingot:8},
+  flags:{campfire:1,duelWon:1,metElder:1,t3:1,t11:1,t17:1,furnace:1,lab:1,moonSig:1,demo:1},
+  built:[{t:'lab',m:'village',x:13,y:14},{t:'furnace',m:'village',x:13,y:16}],revived:{},found:{}});
+ for(const id of STONE)if(has(id)){s.revived[id]=1;s.found[id]=1}return s}
+$('bDemo').onclick=()=>{start(demoState(),false);const b=villagers().find(n=>n.id==='bork');if(b){moveNpc(b,'village',24,15);b.still=false;b.hired=true}
+ tick10();checkQuests();toast('🎬 Демо: дай работу двум жителям (E рядом с жителем) и смотри на склад')};
 const sv=loadSave();if(sv)$('bCont').style.display='';
 $('bCont').onclick=()=>start(loadSave()||sv,false);
 function showTitle(reset){started=false;F=null;cut=null;document.body.className='';closePanel();$('title').style.display='flex';$('bNew').style.display=reset?'none':'';$('bCont').style.display='none';$('diffBox').style.display=reset?'flex':'none'}
