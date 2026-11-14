@@ -519,7 +519,7 @@ $('panel').addEventListener('click',e=>{const b=e.target.closest('button');if(!b
  if(a==='duel')return startFight();
  if(a==='guide'){openPanel('guide');return}
  if(a==='stage'&&!S.shipJob){const st=STAGES[S.ship];pay(st.cost);S.shipJob={i:S.ship,p:0,need:[26,34,26,22,26][S.ship]*[.7,1,1.3][S.diff!=null?S.diff:1]};sfx('build');closePanel();say([['Рен',`Дед Тарас! Нужен «${st.n}». Материалы на складе.`],['Дед Тарас','Иду на причал! Арсен, бери молоток. А носильщики пусть таскают доски.']])}
- if(a==='sail'){if(has('maris')&&!S.revived.maris){toast('Без капитана не отплыть: оживи Мариса у берега деревни');return}closePanel();goSea({x:SEA.home.x+360,y:SEA.home.y+40,a:0,v:0,dest:{x:2150,y:1350,n:'открытое море'}});if(!S.flags.firstSail){S.flags.firstSail=1;say([['','«Искра» отходит от причала. Ветер наполняет парус.'],['Капитан Марис','Держись крепче, учёный! Курс — открытое море.'],['','Рен не умеет управлять кораблём. Нажми E — и скажи Марису, куда плыть. Можно спуститься в трюм: корабль поплывёт сам.']])}return}
+ if(a==='sail'){if(has('maris')&&!S.revived.maris){toast('Без капитана не отплыть: оживи Мариса у берега деревни');return}closePanel();goSea({x:SEA.home.x+360,y:SEA.home.y+40,a:0,v:0,dest:S.flags.demo?{x:coastX(SEA.goal.y)-110,y:SEA.goal.y,goal:1,n:'источник сигнала'}:{x:2150,y:1350,n:'открытое море'}});if(!S.flags.firstSail){S.flags.firstSail=1;say([['','«Искра» отходит от причала. Ветер наполняет парус.'],['Капитан Марис','Держись крепче, учёный! Курс — открытое море.'],['','Рен не умеет управлять кораблём. Нажми E — и скажи Марису, куда плыть. Можно спуститься в трюм: корабль поплывёт сам.']])}return}
  if(a==='course'){const c=b.dataset.c,s2=S.sea;s2.dest=c==='home'?{x:SEA.home.x+250,y:SEA.home.y+40,home:1,n:'Истоки'}:c==='open'?{x:2150,y:1350,n:'открытое море'}:c==='goal'?{x:coastX(SEA.goal.y)-110,y:SEA.goal.y,goal:1,n:'источник сигнала'}:null;if(!s2.dest)s2.v=0;say([['Капитан Марис',s2.dest?`Есть курс: ${s2.dest.n}! Поднять паруса!`:'Стоп. Бросаем якорь.']]);return}
  if(a==='dock'){closePanel();S.sea.v=0;S.sea.dest=null;goTile('village',20,31,2);return}
  if(a==='land'){closePanel();S.sea.v=0;S.sea.dest=null;S.flags.landed=1;goTile('newland',9,13,2);say([['Рен','Берег! Песок, лес... и следы. Свежие следы обуви.'],['Брок','Обуви? Здесь кто-то ходит в ботинках?'],['Рен','Сигнал шёл отсюда. Ищем передатчик — иди по следам.']]);return}
@@ -540,7 +540,7 @@ function tryBuild(b){const d=DIRV[S.dir],m=cur;let tx,ty;
  if(m.npcs.some(n=>boxHits(n.x,n.y,tx,ty)||(n.path[0]===ty*m.w+tx))){toast('Здесь стоит житель — подожди, пока отойдёт');return false}
  const i=ty*m.w+tx;
  if(tx<1||ty<1||tx>=m.w-1||ty>=m.h-1||solid(m,tx,ty)||m.o[i]||![G,DI,FL,GV,SA].includes(m.g[i])){toast('Здесь строить нельзя — встань лицом к свободной клетке');return false}
- if(b.id!=='campfire'&&has('taras')){if(!S.flags.duelWon){toast('Строит только дед Тарас, а он живёт в деревне. Сначала пройди Брока');return false}pay(b.cost);const need=BTIME[b.id]||12;m.o[i]={t:'site',b:b.id,prog:0,need};S.sites.push({m:S.map,x:tx,y:ty,t:b.id,prog:0,need});sfx('build');toast('📐 Заказ для Тараса: '+b.n+'. Он скоро придёт!');save();return true}
+ if(b.id!=='campfire'&&has('taras')){if(!S.flags.duelWon){toast('Строит только дед Тарас, а он живёт в деревне. Сначала пройди Брока');return false}pay(b.cost);const need=S.flags.demo?3:(BTIME[b.id]||12);m.o[i]={t:'site',b:b.id,prog:0,need};S.sites.push({m:S.map,x:tx,y:ty,t:b.id,prog:0,need});sfx('build');toast('📐 Заказ для Тараса: '+b.n+'. Он скоро придёт!');save();return true}
  pay(b.cost);m.o[i]={t:b.id};S.built.push({m:S.map,x:tx,y:ty,t:b.id});S.flags[b.id]=1;toast('Построено: '+b.n);P.cheer=1;checkQuests();save();return true}
 
 /* ---------- действие ---------- */
@@ -561,7 +561,7 @@ function interact(){if(!started||F)return;if(B&&!dq.length&&!panelOpen&&!moon){b
  const pk0=pickObj();if(best&&!(pk0&&objFirst(pk0.o)))return talk(best);
  if(xInteract(pk0))return;
  const pk=pk0;if(!pk)return toast('Подойди вплотную к дереву, камню или кусту и нажми E');const o=pk.o;
- if(o.t==='statue'){if(o.broken&&!S.restored[o.id])return toast('Статуя разбита на куски. Соберёт её Ульяна — назначь её реставратором');if(o.rev)return toast('Камень трескается... подожди');if(!S.inv.elixir&&!S.research.plat)return say(o.id==='dan'?[['Рен','Дан... Это ты. Упал прямо у пещеры — будто шёл ко мне.'],['Рен','Держись, здоровяк. Меня разбудила капля с потолка — значит, камень можно растворить. Я соберу эликсир и вернусь за тобой.']]:[['Рен','Человек из камня... Каждая складка одежды на месте. Это не скульптура — он был живым.'],['Рен','Нужен эликсир пробуждения. Его можно сделать рядом с лабораторией.']]);if(!S.research.plat)S.inv.elixir--;o.rev=o.revT=DF().rev;revs.push(o);return say([['Рен','Эликсир впитывается в камень. Теперь нужно подождать.']])}
+ if(o.t==='statue'){if(o.broken&&!S.restored[o.id])return toast('Статуя разбита на куски. Соберёт её Ульяна — назначь её реставратором');if(o.rev)return toast('Камень трескается... подожди');if(!S.inv.elixir&&!S.research.plat)return say(o.id==='dan'?[['Рен','Дан... Это ты. Упал прямо у пещеры — будто шёл ко мне.'],['Рен','Держись, здоровяк. Меня разбудила капля с потолка — значит, камень можно растворить. Я соберу эликсир и вернусь за тобой.']]:[['Рен','Человек из камня... Каждая складка одежды на месте. Это не скульптура — он был живым.'],['Рен','Нужен эликсир пробуждения. Его можно сделать рядом с лабораторией.']]);if(!S.research.plat)S.inv.elixir--;o.rev=o.revT=S.flags.demo?3:DF().rev;revs.push(o);return say([['Рен','Эликсир впитывается в камень. Теперь нужно подождать.']])}
  if(o.t==='arch'){const b=villagers().find(n=>n.id==='bork');if(b&&!S.flags.duelWon&&mapOf(b)!=='arena'){moveNpc(b,'arena',13,7);b.still=true}return goMap({to:'arena',px:12*T+8,py:15*T+12,dir:3})}
  if(o.t==='site')return toast(`Стройка: ${(BUILDS.find(b=>b.id===o.b)||{}).n} — ${Math.round(100*(o.prog||0)/(o.need||1))}%. Строит дед Тарас`);
  if(o.t==='fan')return toast('Зрители шумят: «Брок! Брок! Брок!»');
@@ -1029,7 +1029,7 @@ function freeNear(m,x0,y0){for(let r=1;r<5;r++)for(let dy=-r;dy<=r;dy++)for(let 
 function statues(){const r=[];for(const k of['glade','village','forest','cave'])maps[k].o.forEach((o,i)=>{if(o&&o.t==='statue'&&o.id&&!S.revived[o.id])r.push({o,m:k,x:i%maps[k].w,y:i/maps[k].w|0})});return r}
 function idleWalk(n,m,dt){n.work=false;n.wt=(n.wt||0)-dt;if(n.wt>0)return;n.wt=2+Math.random()*3;const tx=n.x/T|0,ty=n.y/T|0,d=DIRV[Math.random()*4|0],nx=tx+d[0],ny=ty+d[1];if(!solid(m,nx,ny)&&Math.abs(nx-n.hx)<4&&Math.abs(ny-n.hy)<4&&m.g[ny*m.w+nx]!==PA)n.path=[ny*m.w+nx]}
 /* строитель */
-function updBuilder(n,m,dt){if(n.path.length)return stepPath(n,m,dt,46);n.moving=false;
+function updBuilder(n,m,dt){if(n.path.length)return stepPath(n,m,dt,S.flags.demo?150:46);n.moving=false;
  if(!S.sites[0]&&(S.shipJob||S.balJob||S.rocketJob)&&S.flags.duelWon)return updBig(n,m,dt);
  const site=S.sites[0];
  if(!site||!S.flags.duelWon){n.msg='';if(m.name!=='village'){moveNpc(n,'village',15,11);return}return idleWalk(n,m,dt)}
@@ -1290,7 +1290,7 @@ function updBig(n,m,dt){const J=S.shipJob?{map:'village',x:20,y:31,f:[21,32],n:S
  const tx=n.x/T|0,ty=n.y/T|0;if(tx!==J.x||ty!==J.y){const p=bfsTo(m,tx,ty,J.x,J.y);if(p&&p.length&&p.length<80){n.path=p;n.msg='Иду строить: '+J.n;return}n.x=J.x*T+8;n.y=J.y*T+12}
  face(n,J.f[0],J.f[1]);n.work=true;n.moving=false;
  const ar=villagers().find(v=>v.id==='arsen'),arH=ar&&mapOf(ar)===m.name&&Math.hypot(ar.x-n.x,ar.y-n.y)<44,hl=villagers().filter(v=>v.job==='help'&&mapOf(v)===m.name).length;
- J.o.p+=dt*(1+(arH?.6:0)+hl*.5);const pc=Math.min(100,Math.round(100*J.o.p/J.o.need));n.msg=`Строю: ${J.n} ${pc}%`+(arH?' · Арсен помогает':'');
+ J.o.p+=dt*(S.flags.demo?10:1)*(1+(arH?.6:0)+hl*.5);const pc=Math.min(100,Math.round(100*J.o.p/J.o.need));n.msg=`Строю: ${J.n} ${pc}%`+(arH?' · Арсен помогает':'');
  if(J.o.p>=J.o.need){n.work=false;if(S.rocketJob&&J.o===S.rocketJob){S.rocket=(S.rocket||0)+1;S.rocketJob=null;toast('🚀 Тарас достроил: '+J.n);sfx('build');P.cheer=1;checkQuests()}else if(S.shipJob){S.ship++;S.shipJob=null;toast('⚓ Тарас достроил: '+J.n);sfx('build');P.cheer=1;checkQuests()}
   else{S.balJob=null;S.flags.balloon=1;maps.newland.o[10*maps.newland.w+24]={t:'balloon'};toast('🎈 Воздушный шар готов!');sfx('build');checkQuests()}save()}}
 function updPorter(n,m,dt){if(n.path.length)return stepPath(n,m,dt,52);n.moving=false;n.work=false;
@@ -1334,7 +1334,7 @@ function updFoes(dt){const m=maps.newland;if(!m||!m.foes)return;caughtT=Math.max
   if(d<R&&!busy()&&caughtT<=0&&!prepDone()&&!S.flags.warWon){caughtT=3;sfx('caught');S.x=16*T+8;S.y=13*T+12;S.dir=2;P.work=null;S.stats.caught=(S.stats.caught||0)+1;
    say([[f.name,f.line],['Рен',S.flags.scouted?'Без подготовки туда нельзя. Сначала — список из «Арсенала» (R).':'Их слишком много... Нужно разведать крепость сверху.']])}}}
 function prepList(){const cnt=k=>(S.inv[k]||0)+(S.storage[k]||0);return[['🛡 Медные щиты',cnt('shield'),6,'🔨 у плавильной печи: 2 слитка + 2 дерева'],['💨 Дымовые шашки',cnt('smoke'),4,'🔨 в лаборатории: уголь + волокно + ягоды'],['⚔ Защитники',villagers().filter(v=>v.job==='guard').length,3,'Поговори с жителем → работа «Защитник»'],['📻 Рации',S.research.walkie?1:0,1,'Лаборатория → исследование «Рации»']]}
-function prepDone(){return!!(S&&S.flags&&S.flags.scouted)&&prepList().every(p=>p[1]>=p[2])}
+function prepDone(){if(S&&S.flags&&S.flags.demo&&S.flags.scouted)return true;return!!(S&&S.flags&&S.flags.scouted)&&prepList().every(p=>p[1]>=p[2])}
 function prepTxt(){const L=['Щиты','Дым','Защитники','Рации'];return prepList().map((p,i)=>L[i]+' '+Math.min(p[1],p[2])+'/'+p[2]).join(' · ')}
 const XPANEL_arsenal=function(){let h='<button class="close" data-a="close">✕</button><h2>⚔ Арсенал врага</h2><p class="muted">Это видно с воздушного шара. Чтобы победить, выполни задания внизу.</p>';
  for(const f of FOES)h+=`<div class="row"><div><b>${f.name}</b> — ${f.role} <span class="no">${'★'.repeat(f.power)}</span><br><span class="muted">Оружие: ${f.wpn}</span><br><span class="ok">Против него: ${f.counter}</span></div></div>`;
@@ -1530,7 +1530,7 @@ function startBattle(){closePanel();const m=maps.newland;B={t:0,over:0,fx:[],sta
  const sh=(S.inv.shield||0)+(S.storage.shield||0)>=6,sm=(S.inv.smoke||0)+(S.storage.smoke||0)>=4;B.sh=sh;B.sm=sm;
  m.foes=m.foes.filter(f=>f.id==='korvin');for(let y=13;y<=14;y++)m.o[y*m.w+66]=null;
  S.x=69*T+8;S.y=13*T+14;S.dir=2;B.ren={hp:100,max:100,cd:0};
- const guards=villagers().filter(v=>v.job==='guard').slice(0,3);
+ let guards=villagers().filter(v=>v.job==='guard').slice(0,3);if(S.flags.demo&&guards.length<3)guards=guards.concat(villagers().filter(v=>v.job!=='guard'&&!['taras','tihon','maris'].includes(v.id))).slice(0,3);
  const U=(o)=>Object.assign({dir:2,moving:false,seed:Math.random()*9|0,cd:.5+Math.random()*.6,dead:false,hit:0},o);
  B.units=[...guards.map((g,i)=>U({side:0,name:g.name,pal:g.pal,x:68*T+8,y:(11+i*2)*T+12,hp:80,max:80,dmg:9,sp:46,rate:.95}))];
  const E=[['yar',72,9,10,48],['grant',58,8,8,40],['ten',50,7,9,56],['timofey',62,8,9,36]];
@@ -1609,13 +1609,58 @@ function drawPortals(m,cx,cy){if(!m.portals||m.sea)return;const g=ctx;
   g.textAlign='center';g.fillStyle='#2a1a0c';g.fillText(name,sx,sy-2)}}
 {const _tb=tryBuild;tryBuild=function(b){const d0=S.dir;for(const d of[d0,0,2,1,3]){S.dir=d;if(_tb(b)){toastT=2.4;return true}}S.dir=d0;return false}}
 /* ---- демо для жюри: готовая деревня ---- */
-function demoState(){const s=newState(0);Object.assign(s,{map:'village',x:20*T+8,y:15*T+12,dir:0,q:8,
-  inv:{axe:1,pick:1,torch:1,berry:40,wood:30,stone:20,fiber:12},storage:{wood:40,stone:30,fiber:20,ore:12,coal:12,ingot:8},
-  flags:{campfire:1,duelWon:1,metElder:1,t3:1,t11:1,t17:1,furnace:1,lab:1,moonSig:1,demo:1},
-  built:[{t:'lab',m:'village',x:13,y:14},{t:'furnace',m:'village',x:13,y:16}],revived:{},found:{}});
- for(const id of STONE)if(has(id)){s.revived[id]=1;s.found[id]=1}return s}
-$('bDemo').onclick=()=>{start(demoState(),false);const b=villagers().find(n=>n.id==='bork');if(b){moveNpc(b,'village',24,15);b.still=false;b.hired=true}
- tick10();checkQuests();toast('🎬 Демо: дай работу двум жителям (E рядом с жителем) и смотри на склад')};
+function demoState(){const s=newState(0);Object.assign(s,{map:'village',x:20*T+8,y:3*T+12,dir:0,q:3,
+  inv:{axe:1,pick:1,torch:1,berry:60,elixir:3,shield:6,smoke:4},
+  storage:{wood:3000,stone:3000,fiber:3000,ore:3000,coal:3000,ingot:3000},
+  stats:{ore:10,coal:10,ingot:10,delivered:12},research:{copper:1,cart:1,ship:1,radio:1,walkie:1},
+  flags:{campfire:1,metElder:1,t3:1,t11:1,t17:1,done2:1,furnace:1,demo:1,signal:1,bearing:1,crackle:1,found:1,fortSeen:1,balloon:1,scouted:1},
+  built:[{t:'furnace',m:'village',x:13,y:16}],revived:{},found:{}});
+ for(const id of STONE)if(has(id)){s.found[id]=1;if(id!=='maris')s.revived[id]=1}return s}
+function runDemo(){closePanel();dq.length=0;moon=null;B=null;F=null;document.body.classList.remove('fight','cut');start(demoState(),false);tick10();checkQuests();save();
+ toast('🎬 Демо: победи Брока (E рядом с ним → арка слева → арена)')}
+function restartDemo(){try{sessionStorage.setItem('era-demo','1');location.reload();return}catch(e){}runDemo()}
+$('bDemo').onclick=runDemo;$('bDemo').textContent='🎬 Демо для жюри — весь путь до Луны';
+try{if(sessionStorage.getItem('era-demo')){sessionStorage.removeItem('era-demo');setTimeout(runDemo,60)}}catch(e){}
+addEventListener('keydown',e=>{if(e.key==='F9'){e.preventDefault();restartDemo()}});
+/* море в демо идёт в 4 раза быстрее, по прибытии сразу окно курса */
+{const _us=updSea;updSea=function(dt){if(!(S&&S.flags&&S.flags.demo))return _us(dt);const g=S.sea&&S.sea.dest&&S.sea.dest.goal;for(let i=0;i<4;i++)_us(dt);
+ if(g&&S.sea&&!S.sea.dest&&cur.sea&&!dq.length&&panelOpen!=='course')openPanel('course')}}
+/* радар Корвина: в демо открытая кнопка возврата в деревню */
+{const _m=XPANEL.moonradar;XPANEL.moonradar=()=>{_m();if(S.flags.demo)$('panel').insertAdjacentHTML('beforeend','<div class="row" style="border-top:2px dashed #e8c26a"><div><b>🎬 Демо: вернуться в деревню</b><br><span class="muted">Пропускает обратное плавание. Открытая функция, описана в README.</span></div><button data-a="demohome">🚀 К ракете</button></div>')}}
+/* меню: перезапуск демо */
+{const _d=decoPanel;decoPanel=function(){_d();if(panelOpen!=='menu')return;$('panel').insertAdjacentHTML('beforeend','<div class="row" style="border-top:2px dashed #e8c26a"><div><b>🎬 Демо для жюри</b><br><span class="muted">Начать демо-версию заново с самого начала. Клавиша F9.</span></div><button data-a="demo2">🎬 Начать демо заново</button></div>')}}
+/* ---------- панель «Действия рабочих» ---------- */
+const WJ=[['wood','🪓','Дерево'],['stone','⛏','Камень'],['fiber','🌿','Волокно'],['ore','🟠','Руда'],['coal','⚫','Уголь'],['porter','📦','Носильщик'],['guard','🛡','Защитник']];
+function wPool(){return villagers().filter(n=>!['taras','tihon','maris'].includes(n.id)&&!(n.id==='bork'&&!S.flags.duelWon)&&!JOBFOR[n.job])}
+function wSet(n,j){n.job=j||null;n.st='seek';n.path=[];n.work=false;n.carry=0;n.msg='';relocate(n)}
+function wManual(){if(S.prio){S.prio=null;S.prioCur=null;S.base={}}}
+function wAdd(j){const n=wPool().find(v=>!v.job);if(!n){toast('Свободных рабочих нет — сними кого-нибудь кнопкой ▼');return false}
+ const l=jobLock(n,j);if(l){toast(l);return false}
+ if(!n.hired){if(!can({berry:3})){toast('Первая работа стоит 3 ягоды — ягод не хватает');return false}pay({berry:3});n.hired=true}
+ wSet(n,j);return true}
+function wSub(j){const a=wPool().filter(v=>v.job===j);if(!a.length)return false;wSet(a[a.length-1],null);return true}
+function wTo(j,k){let c=wPool().filter(v=>v.job===j).length,g=20;while(c<k&&g--){if(!wAdd(j))break;c++}while(c>k&&g--){if(!wSub(j))break;c--}}
+XPANEL.workers=()=>{const pool=wPool(),tot=pool.length,free=pool.filter(v=>!v.job).length,lock=S.q<8;
+ let h='<button class="close" data-a="close">✕</button><h2>👷 Действия рабочих</h2><div class="wtot"><span>Всего рабочих</span><b>'+tot+'</b></div>';
+ if(lock)h+='<div class="big">Жители начнут работать, когда в деревне появится <b>лаборатория</b>: закажи её у деда Тараса (🏠 Стройка).</div>';
+ h+='<div class="wcols">';
+ for(const[j,ic,nm]of WJ){const c=pool.filter(v=>v.job===j).length;let cells='';for(let k=tot;k>=1;k--)cells+=`<i class="${k<=c?'on':''}" data-a="wto" data-j="${j}" data-k="${k}"></i>`;
+  h+=`<div class="wcol"><div class="wic">${ic}</div><div class="wnm">${nm}</div><button data-a="wadd" data-j="${j}" ${lock||!free?'disabled':''}>▲</button><div class="wbar">${cells}</div><button data-a="wsub" data-j="${j}" ${lock||!c?'disabled':''}>▼</button><b class="wn">${c}</b></div>`}
+ h+='</div><div class="wtot"><span>Свободные рабочие</span><b class="'+(free?'no':'ok')+'">'+free+'</b></div>';
+ h+='<div style="text-align:center"><button data-a="weven" '+(lock?'disabled':'')+'>⚖ Поровну на добычу</button> <button data-a="wnone" '+(lock?'disabled':'')+'>Снять всех</button> <button data-a="close" style="background:#3f8f55">✔ Подтвердить</button></div>';
+ h+='<p class="muted">▲ / ▼ или клик по шкале — сколько людей на задаче. Дальше они работают сами и несут всё на склад. Клавиша G.</p>';
+ $('panel').innerHTML=h};
+$('panel').addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled||!S)return;const a=b.dataset.a,j=b.dataset.j;
+ if(a==='demo2'){restartDemo();return}
+ if(a==='demohome'){closePanel();if(S.sea){S.sea.x=SEA.home.x+250;S.sea.y=SEA.home.y+70;S.sea.v=0;S.sea.dest=null}const[x,y]=freeSpot(maps.village,RKX-1,RKY+3);goTile('village',x,y,3);tick10();toast('🚀 Площадка ракеты рядом — подойди и нажми E');return}
+ if(!['wadd','wsub','wto','weven','wnone'].includes(a)||S.q<8)return;wManual();
+ if(a==='wadd')wAdd(j);if(a==='wsub')wSub(j);if(a==='wto'){const c=wPool().filter(v=>v.job===j).length,k=+b.dataset.k;wTo(j,k===c?k-1:k)}
+ if(a==='wnone')for(const n of wPool())if(n.job)wSet(n,null);
+ if(a==='weven'){for(const n of wPool())if(n.job&&n.job!=='guard')wSet(n,null);const G=['wood','stone','fiber','ore','coal'];let i=0,g=30;while(wPool().some(v=>!v.job)&&g--){if(!wAdd(G[i%5]))break;i++}}
+ sfx('ui');checkQuests();save();if(panelOpen==='workers')renderPanel()});
+{const b=document.createElement('button');b.textContent='👷';b.title='Рабочие (G)';b.onclick=()=>openPanel('workers');const t=$('top'),r=t.querySelector('[data-p="quests"]');t.insertBefore(b,r);
+ const st=document.createElement('style');st.textContent='.wtot{display:flex;justify-content:space-between;align-items:center;background:#2c3a55;border-radius:8px;padding:6px 12px;margin:6px 0;font-size:15px}.wtot b{font-size:20px}.wcols{display:flex;gap:4px;justify-content:space-between;margin:8px 0}.wcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:#222c40;border-radius:8px;padding:6px 2px;min-width:0}.wic{font-size:20px}.wnm{font-size:10px;white-space:nowrap}.wcol button{padding:3px 0;width:88%;margin:0}.wbar{display:flex;flex-direction:column;gap:2px;width:60%;min-height:60px;justify-content:flex-end}.wbar i{display:block;height:9px;border-radius:2px;background:#3a4560;cursor:pointer}.wbar i.on{background:#ffd978}.wn{font-size:18px}';document.head.appendChild(st)}
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(started&&!F&&!B&&(k==='g'||k==='п'))openPanel('workers')});
 /* пиксельный воздушный шар */
 drawBalloon=function(g,x,y,crew){x=Math.round(x);y=Math.round(y);const R=(a,b,w,h,c)=>{g.fillStyle=c;g.fillRect(x+a,y+b,w,h)};
  R(-10,44,20,3,'rgba(0,0,0,.2)');
