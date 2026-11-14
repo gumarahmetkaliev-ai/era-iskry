@@ -162,7 +162,7 @@ const MINEJ={ore:1,coal:1};
 const ABIL={wise:{n:'Хранительница',d:'Пока она в деревне, все работают на 20% быстрее'},builder:{n:'Мастер',d:'Строит всё, что придумает Рен. Без него стройки нет'},universal:{n:'Чутьё',d:'Умеет любую работу, помогает Тарасу, иногда приносит лишние ресурсы'},agile:{n:'Ловкость',d:'Бегает вдвое быстрее, с кустов приносит ещё и ягоды'},scout:{n:'Нюх Пыха',d:'Находит каменных людей'},restorer:{n:'Реставратор',d:'Собирает разбитые статуи и оживляет каменных людей'},strong:{n:'Силач',d:'Носит вдвое больше'},stoneguard:{n:'Стражник',d:'Камня приносит вдвое больше'},lucky:{n:'Лентяй с удачей',d:'Работает медленнее, зато иногда находит ягоды и волокно'},cook:{n:'Повар',d:'Готовит у костра: пока есть ягоды, все работают на 25% быстрее'},trader:{n:'Торговец',d:'Пока он в деревне, всё стоит на 20% дешевле'},captain:{n:'Морской волк',d:'Ведёт корабль. Без него «Искра» не отплывёт'},carrier:{n:'Неутомимый',d:'Носит вчетверо больше'},archer:{n:'Острый слух',d:'Работает на 40% быстрее; в Главе 3 — лучник'},herb:{n:'Травник',d:'Вдвое больше волокна'},miner:{n:'Горняк',d:'В шахте работает вдвое быстрее'},chem:{n:'Химик',d:'Знает химию'},fast:{n:'Быстрые ноги',d:'Ходит в полтора раза быстрее'},hands:{n:'Умелые руки',d:'Работает на 40% быстрее'},lumber:{n:'Лесоруб',d:'Вдвое больше дерева'}};
 const ABOF={tihon:'wise',taras:'builder',arsen:'universal',zarina:'agile',kira:'scout',ulyana:'restorer',bork:'strong',egor:'stoneguard',fedya:'lucky',madlen:'cook',shepot:'trader',maris:'captain',bogdan:'carrier',david:'archer'};
 const abilOf=id=>ABOF[id]||['strong','herb','miner','chem','fast','hands','lumber'][(parseInt(String(id).slice(1))||0)%7];
-function jobLock(n,j){if(j==='guard'&&!S.flags.scouted)return'Откроется после разведки крепости';if(n.id==='taras')return'Тарас — строитель: сам берёт заказы со стройки';if(n.id==='maris')return'Капитан не покидает корабль';if(n.id==='tihon')return'Хранительница не уходит из деревни';if(n.id==='bork'&&!S.flags.duelWon)return'Сначала победи его на арене';if(MINEJ[j]&&!S.inv.pick)return'Сначала сделай каменную кирку';return''}
+function jobLock(n,j){if(j==='guard'&&!S.flags.scouted&&!S.flags.demo)return'Откроется после разведки крепости';if(n.id==='taras')return'Тарас — строитель: сам берёт заказы со стройки';if(n.id==='maris')return'Капитан не покидает корабль';if(n.id==='tihon')return'Хранительница не уходит из деревни';if(n.id==='bork'&&!S.flags.duelWon)return'Сначала победи его на арене';if(MINEJ[j]&&!S.inv.pick)return'Сначала сделай каменную кирку';return''}
 const DIFF=[{n:'Лёгкая',y:1.5,c:.7,rev:10,ehp:100,ed:.6,ai:1.4,sea:1.2},{n:'Нормальная',y:1,c:1,rev:20,ehp:140,ed:1,ai:1,sea:1},{n:'Сложная',y:.75,c:1.35,rev:35,ehp:190,ed:1.4,ai:.75,sea:.85}];
 const DF=()=>DIFF[S&&S.diff!=null?S.diff:1];
 const PAL={
@@ -519,13 +519,13 @@ $('panel').addEventListener('click',e=>{const b=e.target.closest('button');if(!b
  if(a==='duel')return startFight();
  if(a==='guide'){openPanel('guide');return}
  if(a==='stage'&&!S.shipJob){const st=STAGES[S.ship];pay(st.cost);S.shipJob={i:S.ship,p:0,need:[26,34,26,22,26][S.ship]*[.7,1,1.3][S.diff!=null?S.diff:1]};sfx('build');closePanel();say([['Рен',`Дед Тарас! Нужен «${st.n}». Материалы на складе.`],['Дед Тарас','Иду на причал! Арсен, бери молоток. А носильщики пусть таскают доски.']])}
- if(a==='sail'){if(has('maris')&&!S.revived.maris){toast('Без капитана не отплыть: оживи Мариса у берега деревни');return}closePanel();goSea({x:SEA.home.x+360,y:SEA.home.y+40,a:0,v:0,dest:S.flags.demo?{x:coastX(SEA.goal.y)-110,y:SEA.goal.y,goal:1,n:'источник сигнала'}:{x:2150,y:1350,n:'открытое море'}});if(!S.flags.firstSail){S.flags.firstSail=1;say([['','«Искра» отходит от причала. Ветер наполняет парус.'],['Капитан Марис','Держись крепче, учёный! Курс — открытое море.'],['','Рен не умеет управлять кораблём. Нажми E — и скажи Марису, куда плыть. Можно спуститься в трюм: корабль поплывёт сам.']])}return}
+ if(a==='sail'){if(has('maris')&&!S.revived.maris){toast('Без капитана не отплыть: оживи Мариса у берега деревни');return}closePanel();goSea({x:SEA.home.x+360,y:SEA.home.y+40,a:0,v:0,dest:{x:2150,y:1350,n:'открытое море'}});if(!S.flags.firstSail){S.flags.firstSail=1;say([['','«Искра» отходит от причала. Ветер наполняет парус.'],['Капитан Марис','Держись крепче, учёный! Курс — открытое море.'],['','Рен не умеет управлять кораблём. Нажми E — и скажи Марису, куда плыть. Можно спуститься в трюм: корабль поплывёт сам.']])}return}
  if(a==='course'){const c=b.dataset.c,s2=S.sea;s2.dest=c==='home'?{x:SEA.home.x+250,y:SEA.home.y+40,home:1,n:'Истоки'}:c==='open'?{x:2150,y:1350,n:'открытое море'}:c==='goal'?{x:coastX(SEA.goal.y)-110,y:SEA.goal.y,goal:1,n:'источник сигнала'}:null;if(!s2.dest)s2.v=0;say([['Капитан Марис',s2.dest?`Есть курс: ${s2.dest.n}! Поднять паруса!`:'Стоп. Бросаем якорь.']]);return}
  if(a==='dock'){closePanel();S.sea.v=0;S.sea.dest=null;goTile('village',20,31,2);return}
  if(a==='land'){closePanel();S.sea.v=0;S.sea.dest=null;S.flags.landed=1;goTile('newland',9,13,2);say([['Рен','Берег! Песок, лес... и следы. Свежие следы обуви.'],['Брок','Обуви? Здесь кто-то ходит в ботинках?'],['Рен','Сигнал шёл отсюда. Ищем передатчик — иди по следам.']]);return}
  if(a==='below'){closePanel();goShipInside();return}
  if(a==='deck'){closePanel();goSea();return}
- if(a==='radlock'){if(radS>.8){const s=S.sea,tb=Math.atan2(SEA.goal.y-s.y,coastX(SEA.goal.y)-30-s.x),deg=Math.round((tb*180/Math.PI+90+360)%360);S.flags.bearing=1;closePanel();P.cheer=1;checkQuests();save();
+ if(a==='radlock'){if(radS>.8){const s=S.sea,tb=Math.atan2(SEA.goal.y-s.y,coastX(SEA.goal.y)-30-s.x),deg=Math.round((tb*180/Math.PI+90+360)%360);S.flags.bearing=1;if(S.flags.demo&&S.sea)S.sea.dest={x:coastX(SEA.goal.y)-110,y:SEA.goal.y,goal:1,n:'источник сигнала'};closePanel();P.cheer=1;checkQuests();save();
    say([['Рен',`Пеленг взят: ${deg}°, северо-восток. Сигнал идёт с той стороны океана!`],['Рен','Экипаж — все в радиорубку!'],['Брок','Звал, капитан?'],['Рен','Кто-то за океаном собрал радио и просит о помощи. Это человек, который знает науку.'],['Мира','А если это ловушка?'],['Гай','А если там правда нужна помощь? Мы ведь сами недавно были камнем.'],['Рен','Решено. Курс на сигнал! Я встаю к штурвалу на мостике.']]);return}toast('Сигнал слабый — поверни антенну точнее')}
  if(a==='save'){save();toast('Сохранено')}
  if(a==='reset'){try{localStorage.removeItem('era-iskry-1')}catch(e){}closePanel();showTitle(true);return}
@@ -1357,8 +1357,8 @@ const XPANEL={credits:()=>XPANEL_credits(),wmap:()=>XPANEL_wmap(),arsenal:()=>XP
 function nm(id){const v=villagers().find(v=>v.id===id);return v?v.name:id}
 function startFly(){closePanel();banT=0;$('qban').style.display='none';const c=S.bcrew.slice();fly={t:0,c,sx:S.x,sy:S.y,st:0};sfx('fire');
  say([['Рен','Горелка — на полную! Горячий воздух легче холодного — поднимаемся!'],[nm(c[0]),'Земля уходит вниз... Держитесь за корзину!']])}
-function updFly(dt){const D=22;fly.t+=dt;const k=Math.min(1,fly.t/D),u=k<.5?k*2:2-k*2,e=u*u*(3-2*u);S.x=(24+62*e)*T+8;S.y=(12-Math.sin(k*Math.PI)*1.5)*T+12;S.dir=k<.5?2:1;P.moving=false;
- if(fly.st===0&&fly.t>7){fly.st=1;const c=fly.c;say([[nm(c[1]),'Вижу стены! И пушки — три штуки на стенах.'],[nm(c[2]),'На дороге часовой с длинной винтовкой. Снайпер!'],[nm(c[0]),'А в центре — палатка с антенной. Это их радио!'],['Рен','Учёный-командир, снайпер, штурмовик, разведчица и артиллерист. Запоминаем всё.']])}
+function updFly(dt){const D=S.flags.demo?7:22;fly.t+=dt;const k=Math.min(1,fly.t/D),u=k<.5?k*2:2-k*2,e=u*u*(3-2*u);S.x=(24+62*e)*T+8;S.y=(12-Math.sin(k*Math.PI)*1.5)*T+12;S.dir=k<.5?2:1;P.moving=false;
+ if(fly.st===0&&fly.t>D/3){fly.st=1;const c=fly.c;say([[nm(c[1]),'Вижу стены! И пушки — три штуки на стенах.'],[nm(c[2]),'На дороге часовой с длинной винтовкой. Снайпер!'],[nm(c[0]),'А в центре — палатка с антенной. Это их радио!'],['Рен','Учёный-командир, снайпер, штурмовик, разведчица и артиллерист. Запоминаем всё.']])}
  if(fly.t>=D&&!dq.length){S.x=fly.sx;S.y=fly.sy;fly=null;S.flags.scouted=1;P.cheer=1;checkQuests();save();say([['Рен','Разведка окончена! Теперь мы знаем их силы.'],['Рен','Открываю «Арсенал» — там список, что нужно сделать, чтобы победить.']],()=>openPanel('arsenal'))}}
 /* ---------- объекты ---------- */
 function xInteract(pk){if(!pk)return false;const o=pk.o;if(xInteract10(pk))return true;
@@ -1609,15 +1609,15 @@ function drawPortals(m,cx,cy){if(!m.portals||m.sea)return;const g=ctx;
   g.textAlign='center';g.fillStyle='#2a1a0c';g.fillText(name,sx,sy-2)}}
 {const _tb=tryBuild;tryBuild=function(b){const d0=S.dir;for(const d of[d0,0,2,1,3]){S.dir=d;if(_tb(b)){toastT=2.4;return true}}S.dir=d0;return false}}
 /* ---- демо для жюри: готовая деревня ---- */
-function demoState(){const s=newState(0);Object.assign(s,{map:'village',x:20*T+8,y:3*T+12,dir:0,q:3,
+function demoState(){const s=newState(0);Object.assign(s,{q:3,
   inv:{axe:1,pick:1,torch:1,berry:60,elixir:3,shield:6,smoke:4},
   storage:{wood:3000,stone:3000,fiber:3000,ore:3000,coal:3000,ingot:3000},
   stats:{ore:10,coal:10,ingot:10,delivered:12},research:{copper:1,cart:1,ship:1,radio:1,walkie:1},
-  flags:{campfire:1,metElder:1,t3:1,t11:1,t17:1,done2:1,furnace:1,demo:1,signal:1,bearing:1,crackle:1,found:1,fortSeen:1,balloon:1,scouted:1},
+  flags:{campfire:1,metElder:1,t3:1,t11:1,t17:1,done2:1,furnace:1,demo:1,found:1,fortSeen:1,balloon:1},
   built:[{t:'furnace',m:'village',x:13,y:16}],revived:{},found:{}});
  for(const id of STONE)if(has(id)){s.found[id]=1;if(id!=='maris')s.revived[id]=1}return s}
 function runDemo(){closePanel();dq.length=0;moon=null;B=null;F=null;document.body.classList.remove('fight','cut');start(demoState(),false);tick10();checkQuests();save();
- toast('🎬 Демо: победи Брока (E рядом с ним → арка слева → арена)')}
+ toast('🎬 Демо: иди на юг в деревню — у моста Брок')}
 function restartDemo(){try{sessionStorage.setItem('era-demo','1');location.reload();return}catch(e){}runDemo()}
 $('bDemo').onclick=runDemo;$('bDemo').textContent='🎬 Демо для жюри — весь путь до Луны';
 try{if(sessionStorage.getItem('era-demo')){sessionStorage.removeItem('era-demo');setTimeout(runDemo,60)}}catch(e){}
