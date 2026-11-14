@@ -472,7 +472,8 @@ function checkQuests(){let adv=false;while(S.q<QUESTS.length&&QUESTS[S.q].ok()){
  const q=QUESTS[S.q];$('qt').textContent=q?(S.q>=27?'Гл.4 · ':S.q>=22?'Гл.3 · ':S.q>=13?'Гл.2 · ':'Гл.1 · ')+q.t:'Продолжение следует';$('qp').textContent=q?q.p():'Свободная игра';$('loc').textContent=NAMES[S.map];hud8()}
 
 /* ---------- панели ---------- */
-let panelOpen=null,panelArg=null;
+let panelOpen=null,panelArg=null,PDOWN=false,PUP=0;
+addEventListener('pointerdown',()=>{PDOWN=true},true);for(const ev of['pointerup','pointercancel'])addEventListener(ev,()=>{PDOWN=false;PUP=time},true);
 function closePanel(){panelOpen=null;$('panel').style.display='none'}
 function openPanel(k,arg){if(dq.length)return;if(panelOpen===k&&!arg){closePanel();return}panelOpen=k;panelArg=arg||null;renderPanel();$('panel').style.display='block'}
 function renderPanel(){if(XPANEL[panelOpen]){XPANEL[panelOpen]();return}renderPanel0();decoPanel()}
@@ -664,7 +665,7 @@ function update(dt){time+=dt*1000;
  for(const k in maps){const m=maps[k];for(let i=m.dead.length-1;i>=0;i--){const o=m.dead[i];o.rt-=dt;if(o.rt<=0){const idx=m.o.indexOf(o),ox=idx%m.w,oy=idx/m.w|0;
    if(m===cur&&Math.abs(ox*T+8-S.x)<14&&Math.abs(oy*T+8-S.y)<16){o.rt=2;continue}o.dead=false;m.dead.splice(i,1)}}
   for(const n of m.npcs)(m.name==='ship'?updCrew:updNpc)(n,m,dt)}
- qTimer-=dt;if(qTimer<=0){qTimer=.4;checkQuests();checkAch();if(panelOpen==='storage'||panelOpen==='quests'||(panelOpen==='ship'&&S.shipJob)||panelOpen==='arsenal')renderPanel()}
+ qTimer-=dt;if(qTimer<=0){qTimer=.4;checkQuests();checkAch();if(!PDOWN&&time-PUP>350&&(panelOpen==='storage'||panelOpen==='quests'||(panelOpen==='ship'&&S.shipJob)||panelOpen==='arsenal'))renderPanel()}
  saveT+=dt;if(saveT>12){saveT=0;save()}
  tick8(dt);P.cheer=Math.max(0,(P.cheer||0)-dt);S.fedT=Math.max(0,(S.fedT||0)-dt);if(panelOpen==='radar')updRadar(dt);if(S.sea&&S.map==='ship')updSea(dt);if(cur.sea){updSea(dt);return}
  P.moving=false;if(busy()){P.work=null;return}
@@ -1639,12 +1640,13 @@ function applyPrio(k){S.base=S.base||{};for(const n of gatherers()){if(!S.base[n
  if(!k){for(const n of villagers())if(S.base[n.id]&&GATH.includes(S.base[n.id])&&GATH.includes(n.job)&&n.job!==S.base[n.id]){n.job=S.base[n.id];n.st='seek';n.path=[];n.carry=0;relocate(n)}S.base={}}
  S.prioCur=k||null}
 let prioT=0;
-function tickPrio(dt){if(S.prio!=='auto')return;prioT-=dt;if(prioT>0)return;prioT=4;const k=prioNeed();if(k!==(S.prioCur||null)){applyPrio(k);if(k)toast('📦 Авто-приоритет: все добытчики идут за ресурсом «'+PRN[k]+'»')}}
+function tickPrio(dt){if(!S.prio)return;prioT-=dt;if(prioT>0)return;prioT=3;if(S.prio!=='auto'){applyPrio(S.prio);return}const k=prioNeed();if(k!==(S.prioCur||null)){applyPrio(k);if(k)toast('📦 Авто-приоритет: все добытчики идут за ресурсом «'+PRN[k]+'»')}}
 {const _d=decoPanel;decoPanel=function(){_d();if(panelOpen!=='storage')return;const n=gatherers().length,cur=S.prio||'off';let h='<h2 style="margin-top:12px">📦 Приоритет добычи</h2><p class="muted">Скажи системе, чего не хватает — все добытчики ('+n+') переключатся сами. «Авто» само выбирает то, чего меньше всего для текущей стройки.</p><div>';
   for(const[k,t]of[['off','Как назначено'],['auto','🤖 Авто'],['wood','Дерево'],['stone','Камень'],['fiber','Волокно'],['ore','Руда'],['coal','Уголь']])h+=`<button class="crew ${cur===k?'on':''}" data-a="prio" data-k="${k}">${t}</button>`;
   h+='</div>'+(S.prioCur?`<p class="ok">Сейчас все добывают: ${PRN[S.prioCur]}</p>`:'');$('panel').insertAdjacentHTML('beforeend',h)}}
 $('panel').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.dataset.a!=='prio')return;const k=b.dataset.k;
  if(MINEJ[k]&&!S.inv.pick){toast('Для шахты сначала нужна кирка');return}
+ if(k!=='off'&&!gatherers().length){toast('Сначала дай работу добытчика хотя бы одному жителю: лесоруб, каменотёс, собиратель или шахтёр');return}
  S.prio=k==='off'?null:k;if(k==='off')applyPrio(null);else if(k==='auto'){prioT=0;tickPrio(0);if(!S.prioCur)toast('🤖 Авто: сейчас всего хватает — работают как назначено')}else{applyPrio(k);toast('📦 Приоритет: '+PRN[k]+' — добытчики переключились')}
  sfx('ui');save();renderPanel()});
 /* ---- панель автоматизации: система на виду ---- */
