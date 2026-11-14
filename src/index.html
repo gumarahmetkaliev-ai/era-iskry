@@ -70,6 +70,12 @@ body.cut #sci,body.cut #achT,body.fight #mini,body.cut #mini,body.fight #run,bod
 #wm{display:block;width:100%;background:#16324a;border-radius:6px;margin:6px 0}
 .crew{display:inline-block;margin:3px;padding:6px 8px}.crew.on{background:#3f8f55}
 .big{font-size:14px;line-height:1.5;background:#2c3a55;border-left:3px solid #ffd978;padding:6px 8px;margin:6px 0}
+#auto{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);display:none;padding:8px 6px;z-index:2;pointer-events:none;white-space:nowrap}
+#auto .t{font-size:11px;letter-spacing:2px;color:#6fe0b0;text-align:center;margin-bottom:5px}
+#auto .r{display:flex}#auto .c{padding:0 14px;text-align:center;border-left:1px solid #3a4763}#auto .c:first-child{border:0}
+#auto .c b{display:block;font-size:24px;color:#ffd978;line-height:1.1}#auto .c span{font-size:11px;color:#cfd8e8}
+#auto .c.g b{color:#6fe0b0}
+body.fight #auto,body.cut #auto,body.sea #auto{display:none!important}
 </style>
 </head>
 <body>
@@ -91,7 +97,7 @@ body.cut #sci,body.cut #achT,body.fight #mini,body.cut #mini,body.fight #run,bod
 <div id="dlg" class="box"><b id="dw"></b><span id="dt"></span><small>листается само · E — быстрее ▸</small></div>
 <div id="panel" class="box"></div>
 <div id="toast" class="box"></div>
-<div id="bub"></div><div id="hint" class="box"></div><canvas id="mini" width="150" height="96"></canvas><div id="achT"></div><div id="qban"></div><div id="sci"></div><button id="run" title="Бег (Shift)">🏃</button>
+<div id="bub"></div><div id="hint" class="box"></div><canvas id="mini" width="150" height="96"></canvas><div id="achT"></div><div id="qban"></div><div id="auto" class="box"></div><div id="sci"></div><button id="run" title="Бег (Shift)">🏃</button>
 <div id="fnames"><span>РЕН</span><span>БРОК</span></div><div id="fmsg"></div>
 <div id="fhelp">A/D — шаг · J — удар · K — нога · L — блок · U/пробел — уклон<br>Красный «!» — Брок бьёт. Но иногда это обман!</div>
 <div id="fight"><div class="fl"><button data-f="l">◀</button><button data-f="r">▶</button></div><div class="fl"><button data-f="b">БЛОК<br>L</button><button data-f="p">УДАР<br>J</button><button data-f="k">НОГА<br>K</button><button data-f="u">УКЛОН<br>U</button></div></div>
@@ -1416,7 +1422,7 @@ function afterRender(m,cx,cy){const g=ctx;if(m.portals&&!B)for(const p of m.port
  if(fly&&m.name==='newland')drawBalloon(g,S.x-cx,S.y-cy-70,fly.c);
  if(!F&&!cut){miniT-=1/30;drawMini(m)}}
 /* ---------- каждый кадр ---------- */
-function tick8(dt){tick10();tickPrio(dt);updBattle(dt);if(panelOpen&&banT>0)banT=.01;if(banT>0){banT-=dt;if(banT<=0)$('qban').style.display='none'}if(sciT>0){sciT-=dt;if(sciT<=0)$('sci').style.display='none'}
+function tick8(dt){tick10();tickPrio(dt);tickAuto(dt);updBattle(dt);if(panelOpen&&banT>0)banT=.01;if(banT>0){banT-=dt;if(banT<=0)$('qban').style.display='none'}if(sciT>0){sciT-=dt;if(sciT<=0)$('sci').style.display='none'}
  stepT-=dt;if(P.moving&&stepT<=0){stepT=RUN()?.22:.34;sfx('step')}
  if(S.research.balloon&&!S.balJob&&!S.flags.balloon){S.balJob={p:0,need:[22,32,42][S.diff!=null?S.diff:1]};const m=maps.newland;m.o[10*m.w+24]={t:'bsite'};
   say([['Рен','Чертёж шара готов! Ткань из волокна, горелка на угле.'],['Рен','Дед Тарас приплывёт и сошьёт шар прямо у лагеря. Носильщики помогут.']])}
@@ -1641,6 +1647,16 @@ $('panel').addEventListener('click',e=>{const b=e.target.closest('button');if(!b
  if(MINEJ[k]&&!S.inv.pick){toast('Для шахты сначала нужна кирка');return}
  S.prio=k==='off'?null:k;if(k==='off')applyPrio(null);else if(k==='auto'){prioT=0;tickPrio(0);if(!S.prioCur)toast('🤖 Авто: сейчас всего хватает — работают как назначено')}else{applyPrio(k);toast('📦 Приоритет: '+PRN[k]+' — добытчики переключились')}
  sfx('ui');save();renderPanel()});
+/* ---- панель автоматизации: система на виду ---- */
+let autoT=0,autoS=[];
+function tickAuto(dt){autoT-=dt;if(autoT>0)return;autoT=.5;const el=$('auto'),w=workers();
+ if((!w&&!S.flags.demo)||moon||fly||B||panelOpen||dq.length){el.style.display='none';if(!w)autoS=[];return}
+ autoS.push([time,S.stats.delivered]);while(autoS.length>2&&time-autoS[0][0]>20000)autoS.shift();
+ const a=autoS[0],dtm=time-a[0],rate=dtm>3000?Math.round((S.stats.delivered-a[1])/dtm*60000):0;
+ let tot=0;for(const k of['wood','stone','fiber','ore','coal','ingot'])tot+=S.storage[k]||0;
+ const pr=S.prio==='auto'?('🤖 '+(S.prioCur?PRN[S.prioCur]:'авто')):S.prioCur?PRN[S.prioCur]:'нет';
+ el.innerHTML=`<div class="t">⚙ АВТОМАТИЗАЦИЯ — РАБОТАЕТ БЕЗ ИГРОКА</div><div class="r"><div class="c"><b>${w}</b><span>работников</span></div><div class="c g"><b>+${rate}</b><span>ресурсов в минуту</span></div><div class="c"><b>${tot}</b><span>на складе</span></div><div class="c"><b style="font-size:17px;line-height:1.55">${pr}</b><span>приоритет</span></div></div>`;
+ el.style.display='block'}
 const sv=loadSave();if(sv)$('bCont').style.display='';
 $('bCont').onclick=()=>start(loadSave()||sv,false);
 function showTitle(reset){started=false;F=null;cut=null;document.body.className='';closePanel();$('title').style.display='flex';$('bNew').style.display=reset?'none':'';$('bCont').style.display='none';$('diffBox').style.display=reset?'flex':'none'}
